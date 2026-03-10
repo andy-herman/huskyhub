@@ -1,4 +1,4 @@
-# Week 1 | Getting Started
+# Week 4 | Logging, Error Handling, and 3rd Party Risk
 
 Welcome to the **HuskyHub Student Services Portal**! HuskyHub is a student-facing web application for the University of Washington iSchool that handles grades, course enrollment, peer messaging, document uploads, and an AI-powered Academic Advisor. Until now it has been used internally by your team.
 
