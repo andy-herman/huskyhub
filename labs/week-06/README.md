@@ -35,11 +35,17 @@ Burp Suite is available for macOS, Windows, and Linux. Download the installer fo
 
 ### 1. Map Authorization-Sensitive Endpoints
 
+**What makes an endpoint "authorization-sensitive":**
+An authorization-sensitive endpoint is any URL where the data returned or the action performed should be restricted to a specific user or role. The clearest indicator is an ID parameter in the URL or request body — `student_id`, `user_id`, `doc_id`. These IDs are object references: they tell the server which database record to retrieve. If the server retrieves whichever record the client requests without first confirming the client owns or has permission to access that record, every other user's data is one URL edit away.
+
 Log in as `jsmith`. Compile a list of every URL containing an ID parameter: `student_id`, `user_id`, `doc_id`, `enrollment_id`, etc. This is your IDOR candidate list.
 
 ---
 
 ### 2. Exploit IDOR on Grades
+
+**What IDOR is and why it is distinct from other access control failures:**
+Insecure Direct Object Reference (IDOR) occurs when the application exposes a direct reference to an internal object (a database record, a file) in a way the user can manipulate, without verifying authorization before serving the object. The difference between IDOR and a broken login is the *level* at which the control fails: the login check verified you are a valid user, but no check verifies that this valid user is the owner of record number 5. The server trusts the number in the URL.
 
 Navigate to your own grades:
 ```
@@ -64,11 +70,14 @@ http://localhost/admin/grades
 http://localhost/admin/pending
 ```
 
-For each route, document whether access is granted and what data or actions are exposed.
+For each route, document whether access is granted and what data or actions are exposed. Note that you changed no cookies and sent no special headers — you simply navigated to a URL.
 
 ---
 
 ### 4. Set Up Burp Suite
+
+**What Burp Suite is doing as a proxy and what "intercept" means:**
+Burp Suite positions itself between your browser and the server as an HTTP proxy. Your browser sends its requests to Burp, Burp forwards them to the server, receives the responses, and passes them back to your browser. This gives you full visibility into every request and response, and the ability to modify either before it reaches its destination. "Intercept mode" pauses each request, letting you read and edit it before clicking Forward to release it. HTTP History shows all captured traffic. Repeater lets you send saved requests to the server as many times as you want with arbitrary modifications — this is how you will systematically enumerate IDOR targets without clicking through the browser manually for each one.
 
 Configure your browser to proxy through Burp Suite:
 1. Open Burp Suite → **Proxy → Intercept → Open Browser**
@@ -82,7 +91,10 @@ Configure your browser to proxy through Burp Suite:
 
 ---
 
-### 5. Automate IDOR Enumeration with Burp Repeater
+### 5. Automate IDOR Enumeration with Burp Repeater and Intruder
+
+**What Intruder does and what "payload positions" are:**
+Intruder is Burp's request automation tool. You mark a parameter value in the request as a "payload position" (using § markers) and provide a list of values to substitute in. Intruder then sends one request per payload value and records every response. For IDOR, you set the `student_id` as the payload position and use a sequential number list as the payload — Intruder effectively sends the same request 20 times with IDs 1 through 20, and you can scan the response lengths and status codes to identify which IDs returned real records versus errors.
 
 In Burp Repeater, systematically change the `student_id` value from 1 to 15 and send each request. Record every student ID that returns a valid grade record with a name attached.
 
@@ -105,6 +117,9 @@ Document: the endpoint, the vulnerable parameter, and what data or action is exp
 ---
 
 ### 7. Remediation — Server-Side Authorization Decorator
+
+**What a Python decorator is and why this pattern is the right approach for authorization:**
+A decorator in Python is a function that wraps another function, adding behavior before or after the wrapped function runs. `@require_role('admin')` placed above a route function means "before executing this route, run the `require_role` check — if it fails, abort; if it passes, run the route as normal." The value of this pattern is consistency: rather than copying an `if role != 'admin': abort(403)` check into every protected route (and risking forgetting it), you define the check once and apply it as a decorator. `functools.wraps(f)` copies metadata from the original function to the wrapper so Flask's routing system can still identify the function correctly. `abort(403)` immediately terminates the request with an HTTP 403 Forbidden response.
 
 Create a reusable authorization decorator in `flask/app/auth_utils.py`:
 

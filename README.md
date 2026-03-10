@@ -67,6 +67,9 @@ ipconfig | grep "IPv4"
 
 ### 1. Test Messaging for Stored XSS
 
+**What `| safe` does in Jinja2 and why it creates an XSS vulnerability:**
+Jinja2, the templating engine Flask uses, automatically escapes HTML characters in variables by default. When you render `{{ m.body }}`, Jinja2 converts `<` to `&lt;` and `>` to `&gt;`, so a script tag becomes visible text rather than executable HTML. The `| safe` filter disables this escaping, telling Jinja2 "I have already sanitized this value, render it as raw HTML." The application uses `| safe` to allow message formatting, but it does not sanitize user input before storage. The result: any user can store a `<script>` tag in the database, and Jinja2 will render it as live HTML in every recipient's browser. The script executes with the privileges of the victim's session — it can read cookies, make authenticated requests, or exfiltrate data.
+
 Log in as `jsmith`. Navigate to `/messages`. In the **Compose** form, select any recipient and enter the following in the **Message** body:
 
 ```html
@@ -79,6 +82,9 @@ Send the message. Log in as the recipient in a second browser session and view t
 
 ### 2. Test Advising Notes for Stored XSS
 
+**Why an `onerror` attribute on an `img` tag is effective as an XSS vector:**
+The `<img>` tag with an invalid `src` triggers the `onerror` event handler because the browser attempts to load the image, fails (since `src=x` is not a valid image URL), and executes whatever JavaScript is in `onerror`. This bypasses filters that only look for `<script>` tags specifically. It also works in contexts where script tags are stripped but HTML attributes are not. The payload executes in the context of the page loading it — in this case, when an advisor views their notes about a student.
+
 Log in as `mwilson` (advisor, password: `advisor123`). Navigate to `/messages/advising-notes`. Add a note for student ID 3 with the content:
 
 ```html
@@ -90,6 +96,9 @@ Log in as `jsmith` and view `/messages/advising-notes`. Document whether the pay
 ---
 
 ### 3. Craft a Cookie-Stealing Payload
+
+**What each component of the payload does:**
+`document.cookie` is a browser API that returns a string containing all non-HttpOnly cookies for the current domain, concatenated as `name=value; name=value`. `encodeURIComponent()` converts special characters (spaces, semicolons, equals signs) to URL-safe percent-encoded form so the cookie string can be safely appended to a URL query parameter. `fetch()` makes an HTTP GET request from the victim's browser to your server at `YOUR_IP:8888`. Your Python HTTP server receives this GET request and logs it — the query string contains the victim's full cookie. You are not breaking into the server; the victim's own browser is sending you the credentials voluntarily, because your injected script instructed it to.
 
 Start a simple HTTP server on your machine to receive exfiltrated data (see platform commands above). Use port 8888.
 
@@ -111,9 +120,14 @@ Send this as a message from `jsmith` to `alee`. Log in as `alee` and view the in
 
 Using the cookie you just exfiltrated, follow the Week 2 impersonation procedure (manually set the cookie in Developer Tools). Confirm you are now authenticated as `alee`. Document what you can access.
 
+This step connects the concepts: an XSS payload is not just a popup. It is arbitrary JavaScript execution in a victim's browser, which can be chained with any other action the victim is authorized to perform.
+
 ---
 
 ### 5. Run OWASP ZAP Active Scan
+
+**What the difference is between DAST and manual testing:**
+Dynamic Application Security Testing (DAST) tools like ZAP interact with a running application from the outside — the same way an attacker would. ZAP sends a large library of known-bad inputs to every form and URL it discovers, then analyzes the responses for patterns that indicate vulnerabilities. It does not read your source code (that is SAST — Static Application Security Testing). ZAP's value is breadth: it can test hundreds of inputs per minute across every endpoint it finds, systematically. Its limitation is that it operates without understanding application logic — it cannot reason about multi-step flows, session context, or vulnerabilities that only appear under specific conditions. You will compare its findings to yours after the scan.
 
 Open ZAP. In the **Quick Start** tab, set the URL to `http://localhost` and click **Automated Scan**. Let it complete fully.
 
@@ -135,17 +149,23 @@ Create a table with three columns:
 | Stored XSS (messages) | ... | ... |
 | ... | ... | ... |
 
-For findings in only one column, explain why the other method missed it.
+For findings in only one column, explain why the other method missed it. This comparison is the point of the exercise — neither method alone is sufficient.
 
 ---
 
 ### 7. Bug Bounty Exercise
+
+**What a bug bounty program is and how responsible disclosure works:**
+A bug bounty program is a formal agreement where an organization offers payment or recognition to security researchers who discover and responsibly disclose vulnerabilities. "Responsible disclosure" means reporting the vulnerability privately to the organization and giving them time to fix it before publishing details publicly. The research you have been doing in this course — methodical, documented, proof-of-concept — is exactly the format a real bug report requires. Today you apply that process to HuskyHub with no specific assignment: find something that was not in the lab instructions.
 
 Spend 20 minutes looking for any vulnerability not formally assigned in any prior week. This is deliberately open-ended. Document each finding with: endpoint, vulnerability type, proof-of-concept, and a severity rating with justification.
 
 ---
 
 ### 8. Remediation — Output Encoding
+
+**What removing `| safe` accomplishes and why Jinja2's default is safe:**
+Jinja2 was designed with auto-escaping enabled as the default for HTML templates. When `| safe` is removed, Jinja2's template renderer intercepts the variable value before writing it to the output stream and replaces `<` with `&lt;`, `>` with `&gt;`, `"` with `&quot;`, and `&` with `&amp;`. These are HTML entities — the browser renders them as the visible characters `< > " &` but does not interpret them as HTML syntax. A `<script>` tag stored in the database becomes `&lt;script&gt;` in the HTML — the browser displays it as text, not code. No JavaScript executes. The key insight is that this is output encoding happening at render time, not input sanitization happening at storage time — the raw payload can stay in the database without issue as long as it is never rendered as raw HTML.
 
 In Jinja2, remove every instance of `| safe` from templates where user-supplied content is rendered. Specifically:
 
@@ -160,6 +180,9 @@ Rebuild and verify that Step 1's payload is rendered as escaped text rather than
 
 ### 9. Implement a Content Security Policy
 
+**What CSP does at the browser level and what `default-src 'self'` means:**
+A Content Security Policy is an HTTP response header that tells the browser which sources it is allowed to load content from and execute scripts from. `default-src 'self'` establishes the baseline: all content must come from the same origin as the page. `script-src 'self'` specifically restricts JavaScript execution to scripts loaded from the same origin — inline scripts (those written directly in the HTML, including injected `<script>` tags) are blocked unless explicitly permitted. This means even if an attacker successfully injects a `<script>` tag into the page, the browser will refuse to execute it if CSP is present. CSP is a defense-in-depth layer: it does not fix the XSS vulnerability, but it limits the damage if the vulnerability exists or is reintroduced.
+
 Add the following header in `nginx/default.conf` inside the HTTPS server block:
 
 ```nginx
@@ -173,6 +196,9 @@ Re-run Step 3's cookie-stealing payload. Open the browser console and document w
 ---
 
 ### 10. Write Automated XSS Regression Tests
+
+**What regression tests are for and what these tests specifically assert:**
+A regression test verifies that a bug that was fixed does not get reintroduced. Without automated tests, every code change requires a manual re-verification of every previously fixed vulnerability — which never happens in practice. These pytest tests automate that check: on every build, they send known XSS payloads to the vulnerable endpoints and assert that the raw `<script>` tag is not present in the response HTML. The assertion checks for the *escaped* form (`&lt;script&gt;`) rather than simply for absence of the tag, because a blank response or an error would also pass an absence check — you want to confirm the content is present and escaped, not just that it is absent for some other reason.
 
 Create `flask/tests/test_xss.py` using pytest:
 
