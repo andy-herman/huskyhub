@@ -164,17 +164,17 @@ INSERT INTO grades (student_id, course_id, grade, gpa_points, quarter) VALUES
 -- ─────────────────────────────────────────
 
 INSERT INTO enrollments (student_id, course_id, quarter, status) VALUES
-    (3,  6,  'Spring 2025', 'enrolled'),
-    (3,  7,  'Spring 2025', 'enrolled'),
-    (4,  7,  'Spring 2025', 'enrolled'),
-    (4,  8,  'Spring 2025', 'enrolled'),
-    (5,  6,  'Spring 2025', 'enrolled'),
-    (5,  8,  'Spring 2025', 'waitlisted'),
-    (6,  5,  'Spring 2025', 'enrolled'),
-    (7,  9,  'Spring 2025', 'enrolled'),
-    (8,  10, 'Spring 2025', 'enrolled'),
-    (9,  9,  'Spring 2025', 'waitlisted'),
-    (10, 10, 'Spring 2025', 'enrolled');
+    (3,  6,  'Spring 2026', 'enrolled'),
+    (3,  7,  'Spring 2026', 'enrolled'),
+    (4,  7,  'Spring 2026', 'enrolled'),
+    (4,  8,  'Spring 2026', 'enrolled'),
+    (5,  6,  'Spring 2026', 'enrolled'),
+    (5,  8,  'Spring 2026', 'waitlisted'),
+    (6,  5,  'Spring 2026', 'enrolled'),
+    (7,  9,  'Spring 2026', 'enrolled'),
+    (8,  10, 'Spring 2026', 'enrolled'),
+    (9,  9,  'Spring 2026', 'waitlisted'),
+    (10, 10, 'Spring 2026', 'enrolled');
 
 -- ─────────────────────────────────────────
 -- Messages

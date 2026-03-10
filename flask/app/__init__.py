@@ -5,7 +5,8 @@ def create_app():
     app = Flask(__name__)
 
     # Secret key used for flash messages
-    app.secret_key = "dev-secret-huskyhub-2024"
+    import os
+    app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-secret-huskyhub-2024")
 
     from .routes.auth import auth_bp
     from .routes.grades import grades_bp
