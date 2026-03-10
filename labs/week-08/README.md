@@ -19,7 +19,47 @@ Stored XSS is present in two places: the messaging system renders message bodies
 | Python HTTP server | Receive exfiltrated cookies |
 | pytest | Write automated regression tests for XSS |
 
-**Download OWASP ZAP:** [zaproxy.org](https://www.zaproxy.org/download/)
+**Download OWASP ZAP:** [zaproxy.org/download](https://www.zaproxy.org/download/)
+
+ZAP is available for macOS, Windows, and Linux. Download the installer for your platform.
+
+### Platform Notes
+
+**Starting the Python HTTP server (Step 3):**
+
+**macOS / Linux:**
+```bash
+python3 -m http.server 8888
+```
+
+**Windows (PowerShell or Git Bash):**
+```powershell
+python -m http.server 8888
+```
+
+> If the command is not found, ensure Python is installed and on your PATH. On Windows, try `py -m http.server 8888`.
+
+**Finding your machine's IP address (needed for the cookie-stealing payload):**
+
+**macOS:**
+```bash
+ipconfig getifaddr en0
+```
+
+**Linux:**
+```bash
+hostname -I | awk '{print $1}'
+```
+
+**Windows (PowerShell):**
+```powershell
+(Get-NetIPAddress -AddressFamily IPv4 | Where-Object {$_.InterfaceAlias -notlike "*Loopback*"}).IPAddress
+```
+
+**Windows (Git Bash):**
+```bash
+ipconfig | grep "IPv4"
+```
 
 ---
 
@@ -51,13 +91,11 @@ Log in as `jsmith` and view `/messages/advising-notes`. Document whether the pay
 
 ### 3. Craft a Cookie-Stealing Payload
 
-Start a simple HTTP server on your machine to receive exfiltrated data:
+Start a simple HTTP server on your machine to receive exfiltrated data (see platform commands above). Use port 8888.
 
-```bash
-python3 -m http.server 8888
-```
+Find your machine's local IP address using the platform-specific command above. You need this because the victim's browser makes the outbound request — `localhost` would resolve to the victim's own machine, not yours.
 
-Craft a payload that sends the victim's session cookie to your server. Replace `YOUR_IP` with your machine's IP address (not `localhost` — the victim's browser makes this request):
+Craft a payload that sends the victim's session cookie to your server:
 
 ```html
 <script>
@@ -80,6 +118,10 @@ Using the cookie you just exfiltrated, follow the Week 2 impersonation procedure
 Open ZAP. In the **Quick Start** tab, set the URL to `http://localhost` and click **Automated Scan**. Let it complete fully.
 
 Export the report: **Report → Generate Report → HTML**.
+
+> **macOS note:** If ZAP does not open after installation, right-click the `.app` file → Open → confirm you want to open it (macOS Gatekeeper restriction on unsigned applications).
+
+> **Windows note:** Launch ZAP from the Start menu or desktop shortcut. Accept the JRE prompt if it appears — ZAP requires Java, which the installer bundles.
 
 ---
 
@@ -158,6 +200,20 @@ def test_message_body_not_executed():
 ```
 
 Write three test cases: one for message body XSS, one for advising notes XSS, and one for a URL-reflected parameter. Each test must assert that the raw `<script>` tag is present as escaped HTML entities, not as an executable tag.
+
+Run the tests:
+
+**macOS / Linux:**
+```bash
+pip3 install pytest
+python3 -m pytest flask/tests/test_xss.py -v
+```
+
+**Windows:**
+```powershell
+pip install pytest
+python -m pytest flask/tests/test_xss.py -v
+```
 
 ---
 

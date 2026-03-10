@@ -19,6 +19,23 @@ HuskyHub has three deliberate authentication failures: the session token is not 
 | Flask sessions and itsdangerous | Implement cryptographically signed sessions |
 | Terminal | Run scripts |
 
+### Platform Notes
+
+**Python:**
+- macOS and Linux use `python3` and `pip3`.
+- Windows uses `python` and `pip` (if Python was installed from python.org with PATH enabled).
+- If you are unsure which command works, run `python --version` and `python3 --version` in your terminal and use whichever responds.
+
+**Installing the requests library:**
+
+```bash
+# macOS / Linux
+pip3 install requests
+
+# Windows
+pip install requests
+```
+
 ---
 
 ## Steps
@@ -78,6 +95,18 @@ with open("labs/week-05/wordlist.txt") as f:
         if r.status_code == 302:
             print(f"[+] Found: {password}")
             break
+```
+
+Save this as `brute.py` and run it:
+
+**macOS / Linux:**
+```bash
+python3 brute.py
+```
+
+**Windows:**
+```powershell
+python brute.py
 ```
 
 Record: how many requests per second, how many attempts before finding the password, whether any lockout triggers.

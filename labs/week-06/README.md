@@ -21,6 +21,14 @@ This week the focus shifts from who you are (authentication) to what you are all
 
 **Download Burp Suite Community:** [portswigger.net/burp/communitydownload](https://portswigger.net/burp/communitydownload)
 
+Burp Suite is available for macOS, Windows, and Linux. Download the installer for your platform and follow the standard installation steps. No license is required for Community Edition.
+
+### Platform Notes for curl
+
+**macOS / Linux:** `curl` is pre-installed. Use it directly in Terminal.
+
+**Windows:** `curl` is available in PowerShell 5.1+ and Windows 10+. If you encounter issues, use Git Bash where `curl` behaves identically to macOS/Linux, or install it via `winget install curl.curl`.
+
 ---
 
 ## Steps
@@ -68,6 +76,10 @@ Configure your browser to proxy through Burp Suite:
 3. In Burp, find the request in **Proxy → HTTP History**
 4. Right-click → **Send to Repeater**
 
+> **macOS note:** If the Burp browser cannot connect to localhost, go to **Proxy → Options** and ensure the listener is on `127.0.0.1:8080`. Then configure your system browser's proxy to `127.0.0.1:8080` under System Preferences → Network → Advanced → Proxies.
+
+> **Windows note:** Configure your browser proxy under Settings → System → Proxy → Manual proxy setup: `127.0.0.1`, port `8080`.
+
 ---
 
 ### 5. Automate IDOR Enumeration with Burp Repeater
@@ -79,6 +91,8 @@ Then use **Intruder** to automate this:
 2. Highlight the `student_id` value → **Add §**
 3. Under **Payloads**, select **Numbers** from 1 to 20
 4. Start the attack and review results
+
+> **Note:** Burp Suite Community Edition throttles Intruder attacks. This is expected — it will complete, just slowly.
 
 ---
 

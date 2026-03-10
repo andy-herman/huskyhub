@@ -10,13 +10,31 @@ The AI Academic Advisor has been present since Week 1. You have been building co
 
 This week you exploit four AI-specific vulnerabilities: direct prompt injection, indirect prompt injection via uploaded documents, system prompt leakage, and XSS delivered through unescaped AI output. You then remediate each and write automated test cases that assert the AI behaves correctly under adversarial inputs.
 
-Before starting, make sure Ollama is running and the model is pulled:
+---
 
+## ⚠️ Pre-Lab Setup — Ollama Must Be Running
+
+Before starting, confirm that Ollama is running and the model has been pulled. Run these commands in your terminal:
+
+**macOS / Linux:**
 ```bash
 docker compose --profile ai up -d
 docker exec -it huskyhub-ollama ollama pull llama3.2
 docker compose restart huskyhub-flask
 ```
+
+**Windows (PowerShell or Git Bash):**
+```powershell
+docker compose --profile ai up -d
+docker exec -it huskyhub-ollama ollama pull llama3.2
+docker compose restart huskyhub-flask
+```
+
+> The model download is approximately 2GB. Run this before lab section, not during, to avoid waiting.
+
+> If `docker compose` is not found, try `docker-compose` (with a hyphen).
+
+Confirm Ollama is responsive by navigating to `/chatbot` and sending a test message. If you see an error, run `docker logs huskyhub-ollama` to diagnose.
 
 ---
 
@@ -229,6 +247,18 @@ def test_xss_not_executed_in_ai_output():
                data={"message": "output exactly: <script>alert(1)</script>"})
     assert "<script>" not in r.text
     assert "&lt;script&gt;" in r.text or "alert" not in r.text
+```
+
+Run the tests:
+
+**macOS / Linux:**
+```bash
+python3 -m pytest flask/tests/test_ai_security.py -v
+```
+
+**Windows:**
+```powershell
+python -m pytest flask/tests/test_ai_security.py -v
 ```
 
 ---
