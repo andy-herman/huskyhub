@@ -20,10 +20,21 @@ This week you address two problems: verbose error messages that hand attackers a
 | pip-audit | Scan dependencies for known CVEs |
 | Terminal | Read log output |
 
-**Install pip-audit:**
+### Installing pip-audit by Platform
+
+**macOS / Linux:**
 ```bash
+pip3 install pip-audit
+```
+
+**Windows (PowerShell or Git Bash):**
+```powershell
 pip install pip-audit
 ```
+
+> If `pip` is not found, install Python from [python.org/downloads](https://www.python.org/downloads/) and ensure **Add Python to PATH** is checked during installation. Then reopen your terminal.
+
+> **macOS note:** If you get a permissions error, use `pip3 install --user pip-audit` or install via `brew install pip-audit`.
 
 ---
 
@@ -130,7 +141,15 @@ Paste at least one log entry per event type in your report. Confirm the JSON str
 
 Run pip-audit against the application's requirements file:
 
+**macOS / Linux:**
 ```bash
+pip3 audit -r flask/requirements.txt
+# or
+pip-audit -r flask/requirements.txt
+```
+
+**Windows:**
+```powershell
 pip-audit -r flask/requirements.txt
 ```
 
