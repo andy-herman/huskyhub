@@ -36,11 +36,28 @@ Steps 1–5 (Wireshark on your own localhost traffic) are safe to perform anywhe
 
 ### Installing Tools by Platform
 
-**macOS:**
+**macOS (Intel):**
 ```bash
 brew install wireshark dsniff
 ```
-> If `brew` is not installed, run the one-liner at [brew.sh](https://brew.sh) first.
+
+**macOS (Apple Silicon — M1/M2/M3):**
+
+`dsniff` does not always build cleanly on Apple Silicon via Homebrew. Use the following approach instead:
+
+```bash
+# Install Wireshark (use the native ARM .dmg from wireshark.org, not brew)
+# Download from: https://www.wireshark.org/download.html
+# Select "macOS Arm Disk Image"
+
+# Install dsniff via Rosetta-enabled Homebrew as a fallback
+arch -x86_64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+arch -x86_64 /usr/local/bin/brew install dsniff
+```
+
+If the Rosetta Homebrew approach is too cumbersome, use `scapy` as a drop-in replacement for `arpspoof` (see the **Apple Silicon Alternative** box in Step 8 below).
+
+> If `brew` is not installed at all, run the one-liner at [brew.sh](https://brew.sh) first.
 
 **Linux (Debian/Ubuntu):**
 ```bash
@@ -75,6 +92,23 @@ ifconfig        # macOS
 ip addr         # Linux
 ```
 
+On macOS, look for the interface that has an `inet` address in the `192.168.x.x` or `10.x.x.x` range and shows `status: active`. This is your active interface.
+
+**Apple Silicon (M1/M2/M3) — more reliable method:**
+```bash
+# Shows only the active interface name and IP in one line
+route get default | grep interface
+ipconfig getifaddr en0    # try en0 first
+ipconfig getifaddr en1    # try en1 if en0 returns nothing
+```
+
+Common interface names on M2 Macs:
+- `en0` — Wi-Fi (most common)
+- `en1` — USB-C to Ethernet adapter or secondary Wi-Fi
+- `bridge100` — appears when Personal Hotspot sharing is active on your Mac (not what you want — use the upstream interface instead)
+
+If you are connected to a **phone hotspot** (your phone sharing its data to your Mac), the Mac side will show `en0` as the active interface receiving the hotspot connection.
+
 **Windows (PowerShell):**
 ```powershell
 ipconfig
@@ -85,7 +119,7 @@ ipconfig
 ip addr
 ```
 
-Record your IP address and the name of the active interface (e.g., `eth0`, `en0`, `wlan0`, or `Wi-Fi`).
+Record your IP address and the name of the active interface.
 
 ---
 
@@ -133,27 +167,75 @@ Locate a request that contains your session cookie. Record the full cookie name 
 
 Pair with a lab partner. Designate one person as the **victim** (logged into HuskyHub on their machine) and one as the **attacker**. Connect both machines to the same personal hotspot or home router.
 
-Record the victim's IP address and the network gateway IP:
+You need three values before proceeding:
+1. Your own IP address (attacker)
+2. The victim's IP address
+3. The gateway IP address
 
-**macOS:**
+---
+
+#### Step 6a. Find your own IP and the gateway
+
+**macOS (all hardware including M1/M2/M3):**
 ```bash
-netstat -rn | grep default
+# Your IP on the active interface
+ipconfig getifaddr en0
+
+# Gateway IP
+netstat -rn | grep default | awk '{print $2}' | head -1
 ```
 
 **Linux:**
 ```bash
-ip route    # look for "default via <gateway>"
+ip addr show        # find your IP
+ip route            # look for "default via <gateway>"
 ```
 
 **Windows (PowerShell):**
 ```powershell
+ipconfig
 Get-NetRoute -DestinationPrefix "0.0.0.0/0"
 ```
 
-**Windows (WSL):**
+> **iPhone hotspot note:** iPhones assign addresses in the `172.20.10.x` range, not `192.168.x.x`. Your IP will look like `172.20.10.2` through `172.20.10.14`, and the gateway will be `172.20.10.1`. Android hotspots typically use `192.168.43.x` with gateway `192.168.43.1`. If your IP looks unusual, this is why.
+
+---
+
+#### Step 6b. Find the victim's IP address
+
+The most reliable method on all platforms — including Apple Silicon Macs — is to read the ARP cache after both machines have exchanged any network traffic (such as loading HuskyHub):
+
+**macOS / Linux (attacker machine):**
 ```bash
-ip route
+arp -a
 ```
+
+This lists every device the attacker machine has recently talked to on the local network. Look for an entry whose IP is in the same subnet as yours but is not your own IP and not the gateway. That is the victim.
+
+**If the victim does not appear in `arp -a` yet:**
+Have the victim load HuskyHub in their browser (`http://localhost:80`). Any network activity will populate the ARP cache. Run `arp -a` again on the attacker machine.
+
+**Alternative — nmap ping sweep (use only if `arp -a` fails):**
+
+First, determine your subnet. If your IP is `172.20.10.3`, your subnet is `172.20.10.0/28`. If your IP is `192.168.43.5`, your subnet is `192.168.43.0/24`.
+
+```bash
+# macOS / Linux
+sudo nmap -sn <your-subnet>
+# Example for iPhone hotspot:
+sudo nmap -sn 172.20.10.0/28
+# Example for Android hotspot or home router:
+sudo nmap -sn 192.168.43.0/24
+```
+
+> **Why not `arp-scan` on Apple Silicon?** The `arp-scan` tool frequently fails to build or run correctly on M1/M2/M3 Macs via Homebrew and is not recommended for this lab. The `arp -a` approach above does not require any additional tools and is equally effective for this exercise.
+
+---
+
+Record all three values before continuing:
+- Attacker IP: `_______________`
+- Victim IP: `_______________`
+- Gateway IP: `_______________`
 
 ---
 
