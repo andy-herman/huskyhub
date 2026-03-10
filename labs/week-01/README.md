@@ -18,8 +18,47 @@ You will also interact with the AI Academic Advisor chatbot and record your obse
 |------|---------|
 | Docker Desktop | Deploy and run the application |
 | Web Browser (Chrome or Firefox) | Interact with the application |
-| Browser Developer Tools (F12) | Inspect headers, cookies, source, and network traffic |
+| Browser Developer Tools | Inspect headers, cookies, source, and network traffic |
 | A notes document | Record every observation systematically |
+
+### Opening Developer Tools by Platform
+
+| Platform | Keyboard Shortcut |
+|----------|------------------|
+| Windows | `F12` or `Ctrl+Shift+I` |
+| macOS | `Cmd+Option+I` |
+
+---
+
+## Platform Setup
+
+### Installing Docker Desktop
+
+Download Docker Desktop for your OS at [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/).
+
+**macOS:** Open the `.dmg`, drag Docker to Applications, and launch it. You do not need a Docker account.
+
+**Windows:** Run the installer. When prompted, ensure **WSL 2** is selected as the backend (not Hyper-V). After installation, open Docker Desktop and wait for the engine to start before proceeding.
+
+### Cloning the Repository
+
+**macOS / Linux (Terminal):**
+```bash
+git clone https://github.com/andy-herman/huskyhub.git
+cd huskyhub
+cp .env.example .env
+docker compose up --build
+```
+
+**Windows (Git Bash or PowerShell):**
+```powershell
+git clone https://github.com/andy-herman/huskyhub.git
+cd huskyhub
+copy .env.example .env
+docker compose up --build
+```
+
+> If `docker compose` is not found on Windows, try `docker-compose` (with a hyphen). Older installations use the hyphenated form.
 
 ---
 
@@ -27,7 +66,7 @@ You will also interact with the AI Academic Advisor chatbot and record your obse
 
 ### 1. Deploy the Application
 
-Clone the repository and follow the setup instructions in the root `README.md`. Confirm all three containers are running in Docker Desktop before proceeding.
+Confirm all three containers are running in Docker Desktop before proceeding.
 
 Navigate to [http://localhost:80](http://localhost:80) and log in with:
 
@@ -46,7 +85,7 @@ Before using any tools, manually visit every page available to you after logging
 
 ### 3. Inspect HTTP Response Headers
 
-Open Developer Tools (`F12`) and go to the **Network** tab. Reload the page. Click the main document request (the first one in the list). Under **Response Headers**, record every header you see.
+Open Developer Tools and go to the **Network** tab. Reload the page. Click the main document request (the first one in the list). Under **Response Headers**, record every header you see.
 
 Pay particular attention to:
 - `Server`
