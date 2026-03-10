@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Advising Notes{% endblock %}
+{% block content %}
+<h2>Advising Notes</h2>
+
+{% if role in ['advisor', 'admin'] %}
+<div class="card shadow-sm mb-4">
+  <div class="card-header"><strong>Add Note</strong></div>
+  <div class="card-body">
+    <form method="POST" action="/messages/advising-notes/add">
+      <div class="mb-3">
+        <label class="form-label">Student ID</label>
+        <input type="number" class="form-control" name="student_id" required
+               placeholder="Enter student user_id">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Note</label>
+        <textarea class="form-control" name="note_content" rows="4"
+                  placeholder="HTML supported for rich formatting..."></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Save Note</button>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<div class="card shadow-sm">
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Student</th>
+          <th>Note</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for n in notes %}
+          <tr>
+            <td>{{ n.first_name }} {{ n.last_name }}</td>
+            {# Render as HTML to preserve formatting added by advisors #}
+            <td>{{ n.note_content | safe }}</td>
+            <td><small class="text-muted">{{ n.created_at }}</small></td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="3" class="text-center text-muted py-4">No advising notes.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

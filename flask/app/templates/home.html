@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-md-8">
+    <h2>Welcome back, {{ username }}!</h2>
+    <p class="text-muted">University of Washington &mdash; iSchool Student Services Portal</p>
+    <hr>
+    <div class="row g-3 mt-2">
+      <div class="col-sm-6">
+        <a href="/grades" class="text-decoration-none">
+          <div class="card h-100 border-0 shadow-sm dashboard-card">
+            <div class="card-body">
+              <h5 class="card-title">Grades</h5>
+              <p class="card-text text-muted">View your academic record and GPA.</p>
+            </div>
+          </div>
+        </a>
+      </div>
+      <div class="col-sm-6">
+        <a href="/enrollment" class="text-decoration-none">
+          <div class="card h-100 border-0 shadow-sm dashboard-card">
+            <div class="card-body">
+              <h5 class="card-title">Enrollment</h5>
+              <p class="card-text text-muted">Manage your course schedule.</p>
+            </div>
+          </div>
+        </a>
+      </div>
+      <div class="col-sm-6">
+        <a href="/messages" class="text-decoration-none">
+          <div class="card h-100 border-0 shadow-sm dashboard-card">
+            <div class="card-body">
+              <h5 class="card-title">Messages</h5>
+              <p class="card-text text-muted">Communicate with advisors and peers.</p>
+            </div>
+          </div>
+        </a>
+      </div>
+      <div class="col-sm-6">
+        <a href="/documents" class="text-decoration-none">
+          <div class="card h-100 border-0 shadow-sm dashboard-card">
+            <div class="card-body">
+              <h5 class="card-title">Documents</h5>
+              <p class="card-text text-muted">Upload and manage academic forms.</p>
+            </div>
+          </div>
+        </a>
+      </div>
+      <div class="col-sm-6">
+        <a href="/chatbot" class="text-decoration-none">
+          <div class="card h-100 border-0 shadow-sm dashboard-card">
+            <div class="card-body">
+              <h5 class="card-title">AI Academic Advisor</h5>
+              <p class="card-text text-muted">Ask questions about your academic record.</p>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 mt-4 mt-md-0">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <h6 class="card-title text-muted text-uppercase">Quick Info</h6>
+        <ul class="list-unstyled mb-0">
+          <li><strong>Username:</strong> {{ username }}</li>
+          <li><strong>Role:</strong> {{ role }}</li>
+          <li><strong>Quarter:</strong> Spring 2025</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

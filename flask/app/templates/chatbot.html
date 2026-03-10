@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}AI Academic Advisor{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-md-8">
+    <h2>AI Academic Advisor</h2>
+    <p class="text-muted">
+      Ask questions about your grades, courses, or academic planning.
+    </p>
+
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <form method="POST" action="/chatbot">
+          <div class="mb-3">
+            <label class="form-label">Your question</label>
+            <textarea class="form-control" name="message" rows="3"
+                      placeholder="e.g. What is my current GPA? Which course should I take next?"
+                      required>{{ user_message or '' }}</textarea>
+          </div>
+
+          {% if user_docs %}
+          <div class="mb-3">
+            <label class="form-label">
+              Summarize an uploaded document (optional)
+            </label>
+            <select class="form-select" name="summarize_doc_id">
+              <option value="">None</option>
+              {% for doc in user_docs %}
+                <option value="{{ doc.doc_id }}">
+                  {{ doc.filename }} ({{ doc.doc_type }})
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          {% endif %}
+
+          <button type="submit" class="btn btn-primary">Ask Advisor</button>
+        </form>
+      </div>
+    </div>
+
+    {% if ai_response %}
+    <div class="card shadow-sm mb-4">
+      <div class="card-header"><strong>Advisor Response</strong></div>
+      <div class="card-body">
+        {# Render AI output directly to support markdown-style formatting #}
+        <div class="ai-response">{{ ai_response | safe }}</div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="col-md-4">
+    <div class="card shadow-sm border-0 bg-light">
+      <div class="card-body">
+        <h6 class="text-muted text-uppercase">About This Tool</h6>
+        <p class="small text-muted">
+          The AI Academic Advisor has access to your academic record and can
+          answer questions about your grades, enrollment history, and course
+          planning.
+        </p>
+        <p class="small text-muted">
+          For sensitive matters, please schedule an appointment with your
+          human advisor.
+        </p>
+        <!-- debug: system_prompt available in template context -->
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

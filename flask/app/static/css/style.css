@@ -1,0 +1,58 @@
+:root {
+  --uw-purple: #4b2e83;
+  --uw-gold: #b7a57a;
+  --uw-light: #f8f5ff;
+}
+
+body {
+  background-color: #f9f9f9;
+  color: #222;
+}
+
+/* Navbar */
+.huskyhub-nav {
+  background-color: var(--uw-purple) !important;
+}
+
+.huskyhub-nav .navbar-brand {
+  color: #fff;
+  font-size: 1.3rem;
+  letter-spacing: 0.03em;
+}
+
+/* Cards */
+.dashboard-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(75, 46, 131, 0.15) !important;
+}
+
+/* AI response area */
+.ai-response {
+  white-space: pre-wrap;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* Footer */
+.footer {
+  border-top: 1px solid #e0e0e0;
+  background-color: #f0f0f0;
+}
+
+/* Utility */
+a { color: var(--uw-purple); }
+a:hover { color: #6d44b8; }
+
+.btn-primary {
+  background-color: var(--uw-purple);
+  border-color: var(--uw-purple);
+}
+
+.btn-primary:hover {
+  background-color: #3a2266;
+  border-color: #3a2266;
+}

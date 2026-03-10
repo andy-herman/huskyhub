@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Messages{% endblock %}
+{% block content %}
+<h2>Messages</h2>
+
+<div class="row">
+  <div class="col-md-8">
+
+    <!-- Compose -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-header"><strong>Compose Message</strong></div>
+      <div class="card-body">
+        <form method="POST" action="/messages/send">
+          <div class="mb-3">
+            <label class="form-label">To</label>
+            <select class="form-select" name="recipient_id" required>
+              <option value="" disabled selected>Select recipient...</option>
+              {% for u in all_users %}
+                <option value="{{ u.user_id }}">
+                  {{ u.first_name }} {{ u.last_name }} ({{ u.username }})
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Subject</label>
+            <input type="text" class="form-control" name="subject" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Message</label>
+            <textarea class="form-control" name="body" rows="4"
+                      placeholder="HTML is supported for formatting..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Send</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Inbox -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-header"><strong>Inbox</strong></div>
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>From</th>
+              <th>Subject</th>
+              <th>Message</th>
+              <th>Received</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in received %}
+              <tr {% if not m.is_read %}class="fw-bold"{% endif %}>
+                <td>{{ m.first_name }} {{ m.last_name }}</td>
+                <td>{{ m.subject }}</td>
+                {# Render body as HTML to support rich formatting #}
+                <td>{{ m.body | safe }}</td>
+                <td><small class="text-muted">{{ m.sent_at }}</small></td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="4" class="text-center text-muted py-3">No messages.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Sent -->
+    <div class="card shadow-sm">
+      <div class="card-header"><strong>Sent</strong></div>
+      <div class="card-body p-0">
+        <table class="table mb-0">
+          <thead class="table-light">
+            <tr><th>To</th><th>Subject</th><th>Sent</th></tr>
+          </thead>
+          <tbody>
+            {% for m in sent %}
+              <tr>
+                <td>{{ m.first_name }} {{ m.last_name }}</td>
+                <td>{{ m.subject }}</td>
+                <td><small class="text-muted">{{ m.sent_at }}</small></td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="3" class="text-center text-muted py-3">No sent messages.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

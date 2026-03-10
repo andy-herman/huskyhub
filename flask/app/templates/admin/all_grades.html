@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}All Grades{% endblock %}
+{% block content %}
+<h2>All Student Grades</h2>
+<div class="card shadow-sm">
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Student</th><th>Course</th><th>Code</th>
+          <th>Grade</th><th>GPA Points</th><th>Quarter</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for g in grades %}
+          <tr>
+            <td>{{ g.first_name }} {{ g.last_name }} ({{ g.username }})</td>
+            <td>{{ g.course_name }}</td>
+            <td>{{ g.course_code }}</td>
+            <td>{{ g.grade }}</td>
+            <td>{{ g.gpa_points }}</td>
+            <td>{{ g.quarter }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

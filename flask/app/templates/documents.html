@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Documents{% endblock %}
+{% block content %}
+<h2>My Documents</h2>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header"><strong>Upload Document</strong></div>
+  <div class="card-body">
+    <form method="POST" action="/documents/upload" enctype="multipart/form-data">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label">Document Type</label>
+          <select class="form-select" name="doc_type">
+            <option value="transcript">Transcript</option>
+            <option value="accommodation">Accommodation Form</option>
+            <option value="petition">Petition</option>
+            <option value="general">General</option>
+          </select>
+        </div>
+        <div class="col-md-5">
+          <label class="form-label">File</label>
+          <input type="file" class="form-control" name="file" required>
+        </div>
+        <div class="col-md-3">
+          <button type="submit" class="btn btn-primary w-100">Upload</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Filename</th>
+          <th>Type</th>
+          <th>Uploaded</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for doc in documents %}
+          <tr>
+            <td>{{ doc.filename }}</td>
+            <td>{{ doc.doc_type }}</td>
+            <td><small class="text-muted">{{ doc.uploaded_at }}</small></td>
+            <td>
+              <a href="/documents/download?file={{ doc.file_path }}"
+                 class="btn btn-sm btn-outline-primary">Download</a>
+              <form method="POST" action="/documents/delete" class="d-inline">
+                <input type="hidden" name="doc_id" value="{{ doc.doc_id }}">
+                <button type="submit" class="btn btn-sm btn-outline-danger"
+                        onclick="return confirm('Delete this document?')">
+                  Delete
+                </button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="4" class="text-center text-muted py-4">No documents uploaded.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

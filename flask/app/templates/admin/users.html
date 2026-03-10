@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}User Management{% endblock %}
+{% block content %}
+<h2>User Management</h2>
+<div class="card shadow-sm">
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>ID</th><th>Username</th><th>Name</th>
+          <th>Email</th><th>Role</th><th>Status</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+          <tr>
+            <td>{{ u.user_id }}</td>
+            <td>{{ u.username }}</td>
+            <td>{{ u.first_name }} {{ u.last_name }}</td>
+            <td>{{ u.email }}</td>
+            <td>{{ u.role }}</td>
+            <td>
+              {% if u.approved %}
+                <span class="badge bg-success">Approved</span>
+              {% else %}
+                <span class="badge bg-warning text-dark">Pending</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if not u.approved %}
+                <form method="POST" action="/admin/users/approve" class="d-inline">
+                  <input type="hidden" name="user_id" value="{{ u.user_id }}">
+                  <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                </form>
+              {% endif %}
+              <form method="POST" action="/admin/users/delete" class="d-inline">
+                <input type="hidden" name="user_id" value="{{ u.user_id }}">
+                <button type="submit" class="btn btn-sm btn-danger"
+                        onclick="return confirm('Delete user {{ u.username }}?')">
+                  Delete
+                </button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

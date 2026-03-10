@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Enrollment{% endblock %}
+{% block content %}
+<h2>Course Enrollment</h2>
+
+<div class="row">
+  <div class="col-md-8">
+
+    <div class="card shadow-sm mb-4">
+      <div class="card-header"><strong>Enroll in a Course</strong></div>
+      <div class="card-body">
+        <form method="POST" action="/enrollment/add">
+          <div class="row g-3 align-items-end">
+            <div class="col-md-6">
+              <label class="form-label">Course</label>
+              <select class="form-select" name="course_id" required>
+                <option value="" disabled selected>Select a course...</option>
+                {% for c in all_courses %}
+                  <option value="{{ c.course_id }}">
+                    {{ c.course_code }} — {{ c.course_name }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Quarter</label>
+              <input type="text" class="form-control" name="quarter" value="Spring 2025">
+            </div>
+            <div class="col-md-2">
+              <button type="submit" class="btn btn-primary w-100">Enroll</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <form class="mb-3" method="GET" action="/enrollment">
+      <div class="input-group" style="max-width:360px;">
+        <input type="text" class="form-control" name="search"
+               value="{{ search }}" placeholder="Search by course name...">
+        <button class="btn btn-outline-secondary" type="submit">Search</button>
+      </div>
+    </form>
+
+    <div class="card shadow-sm">
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Course</th>
+              <th>Code</th>
+              <th>Credits</th>
+              <th>Instructor</th>
+              <th>Quarter</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for e in enrollments %}
+              <tr>
+                <td>{{ e.course_name }}</td>
+                <td>{{ e.course_code }}</td>
+                <td>{{ e.credits }}</td>
+                <td>{{ e.instructor }}</td>
+                <td>{{ e.quarter }}</td>
+                <td>
+                  <span class="badge {% if e.status == 'enrolled' %}bg-success
+                    {% elif e.status == 'waitlisted' %}bg-warning
+                    {% else %}bg-secondary{% endif %}">
+                    {{ e.status }}
+                  </span>
+                </td>
+                <td>
+                  <form method="POST" action="/enrollment/drop" class="d-inline">
+                    <input type="hidden" name="enrollment_id" value="{{ e.enrollment_id }}">
+                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                            onclick="return confirm('Drop this course?')">
+                      Drop
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="7" class="text-center text-muted py-4">Not enrolled in any courses.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
