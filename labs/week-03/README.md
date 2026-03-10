@@ -21,6 +21,18 @@ In Week 2 you captured credentials in cleartext and stole a session cookie over 
 | nginx config files | Enable HTTPS on the web server |
 | Docker Compose | Rebuild and redeploy |
 
+### Platform Notes
+
+**OpenSSL:**
+- **macOS:** Pre-installed. Verify with `openssl version` in Terminal.
+- **Linux:** Pre-installed on most distributions. Install with `sudo apt install openssl` if missing.
+- **Windows:** OpenSSL is included with **Git for Windows**. Open Git Bash and verify with `openssl version`. If not present, download the installer from [slproweb.com/products/Win32OpenSSL.html](https://slproweb.com/products/Win32OpenSSL.html).
+
+**MySQL CLI:**
+- The MySQL client runs inside the Docker container — no local installation is needed. All MySQL commands in this lab use `docker exec` to connect to the container.
+
+**Docker commands** work identically across all platforms in Terminal (macOS/Linux) or Git Bash / PowerShell (Windows).
+
 ---
 
 ## Steps
@@ -107,8 +119,7 @@ Create a new test account and verify the stored value is a bcrypt hash.
 
 ### 7. Generate a Self-Signed TLS Certificate
 
-Run the following command in the `nginx/` directory:
-
+**macOS / Linux:**
 ```bash
 openssl req -x509 -newkey rsa:4096 \
   -keyout nginx/key.pem \
@@ -117,7 +128,18 @@ openssl req -x509 -newkey rsa:4096 \
   -subj "/C=US/ST=Washington/O=UW/CN=localhost"
 ```
 
-This generates a private key and a self-signed certificate.
+**Windows (Git Bash):**
+```bash
+openssl req -x509 -newkey rsa:4096 \
+  -keyout nginx/key.pem \
+  -out nginx/cert.pem \
+  -days 365 -nodes \
+  -subj "//C=US\ST=Washington\O=UW\CN=localhost"
+```
+
+> **Windows note:** The subject string uses a double leading slash and backslashes in Git Bash due to path parsing differences. If you encounter errors, try running the command in WSL instead.
+
+This generates a private key and a self-signed certificate in the `nginx/` directory.
 
 ---
 
@@ -159,13 +181,17 @@ huskyhub-nginx:
     - ./nginx/key.pem:/etc/nginx/certs/key.pem
 ```
 
-Rebuild and navigate to `https://localhost`. Accept the browser certificate warning.
+Rebuild and navigate to `https://localhost`. Accept the browser certificate warning (this is expected for self-signed certificates).
 
 ---
 
 ### 9. Re-run the Week 2 Wireshark Capture
 
 With Wireshark capturing, log in over `https://localhost`. Apply the same POST filter from Week 2. Document what you see in the packet payload instead of plaintext credentials.
+
+> **macOS note:** To capture `localhost` HTTPS traffic in Wireshark, select the **Loopback (lo0)** interface.
+
+> **Windows note:** Select the **Npcap Loopback Adapter** interface.
 
 ---
 
