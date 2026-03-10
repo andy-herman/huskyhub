@@ -51,6 +51,8 @@ MYSQL_PORT=3306
 In your terminal, run:
 
 ```bash
+cp .env.example .env       # macOS / Linux / Git Bash
+# Copy-Item .env.example .env  # Windows PowerShell
 docker compose up --build
 ```
 
@@ -99,15 +101,22 @@ After logging in you will see the HuskyHub dashboard with the following features
 
 The following accounts are available. Full credentials are in `database/init.sql`.
 
-| Username | Role | Password |
-|----------|------|----------|
-| `admin` | Admin | `admin` |
-| `mwilson` | Advisor | `advisor123` |
-| `jsmith` | Student | `password123` |
-| `alee` | Student | `alexpass` |
-| `pchen` | Student | `priya2024` |
-| `tbrown` | Student | `tyler99` |
-| `sgarcia` | Student | `sofia!123` |
+| Username | Role | Password | Notes |
+|----------|------|----------|-------|
+| `admin` | Admin | `admin` | Full admin access |
+| `mwilson` | Advisor | `advisor123` | Advisor; can view all students |
+| `jsmith` | Student | `password123` | Primary lab account |
+| `alee` | Student | `alexpass` | |
+| `pchen` | Student | `priya2024` | |
+| `tbrown` | Student | `tyler99` | |
+| `sgarcia` | Student | `sofia!123` | |
+| `dkim` | Student | `dkim2025` | |
+| `rnguyen` | Student | `rachel456` | |
+| `cmartinez` | Student | `carlos789` | |
+| `lthompson` | Student | `lauren!pass` | |
+| `pending1` | Student | `newuser` | **Unapproved account** — cannot log in until approved by admin |
+
+> Additional accounts may be discoverable through the application itself — finding them is part of the reconnaissance exercise in Week 1.
 
 ---
 
@@ -191,3 +200,77 @@ huskyhub/
 ---
 
 Congratulations on getting HuskyHub running! If you run into issues during setup, reach out to the teaching team on Discord or submit a question through the Live Lab Help Form.
+
+---
+
+## Resetting the Application
+
+If the database gets corrupted (for example, through SQL injection during Week 7 exercises), you can wipe all data and rebuild from the initial seed data:
+
+```bash
+# Stop containers and delete all volumes (all database data will be erased)
+docker compose down -v
+
+# Rebuild and restart fresh
+docker compose up --build
+```
+
+Or with the Makefile shortcut:
+
+```bash
+make reset
+```
+
+> **Warning:** `docker compose down -v` permanently deletes the `mysqldata` volume. All records created during labs will be lost. This is the intended way to recover from a broken state.
+
+---
+
+## Common Issues
+
+### "Cannot connect to the Docker daemon"
+Docker Desktop is not running. Open Docker Desktop and wait for the engine status indicator to turn green before retrying.
+
+### Port 80 already in use
+Another process is using port 80. On macOS, AirPlay Receiver commonly binds port 80 — disable it in System Preferences → General → AirDrop & Handoff. On Windows, IIS may be running — stop it in Services. To identify what is using the port:
+```bash
+# macOS / Linux
+sudo lsof -i :80
+
+# Windows (PowerShell as Administrator)
+netstat -ano | findstr :80
+```
+
+### Port 3306 already in use
+A local MySQL installation is running on port 3306. Either stop it (`brew services stop mysql` on macOS, or via Services on Windows), or change `MYSQL_PORT` in your `.env` file to an unused port like `3307`.
+
+### `docker compose` not found
+Your Docker installation uses the older V1 syntax. Try `docker-compose up --build` (with a hyphen) instead.
+
+### WSL 2 issues on Windows
+If Docker prompts you to install WSL 2 and the installer fails, see the official Microsoft guide: https://learn.microsoft.com/en-us/windows/wsl/install. Ensure you restart your machine after installation.
+
+### The Flask container exits immediately
+Run `docker compose logs huskyhub-flask` to see the error. The most common cause is the database not being ready yet — wait 30 seconds and try `docker compose up` again without `--build`.
+
+---
+
+## Weekly Lab Branch Workflow
+
+Each week's lab instructions are in the corresponding branch (`week-02`, `week-03`, etc.). To switch to a new week's branch without losing your work:
+
+```bash
+# Save any local changes before switching branches
+git add -A
+git commit -m "Week N: my lab work"
+
+# Switch to the next week's branch
+git fetch origin
+git checkout week-02   # replace with the target week number
+```
+
+> **Important:** If you have modified application files (which you will from Week 3 onward), switching branches may produce merge conflicts. Commit your changes to a personal branch first, or use `git stash` to temporarily set them aside:
+> ```bash
+> git stash          # save changes temporarily
+> git checkout week-02
+> git stash pop      # restore your changes on the new branch
+> ```
