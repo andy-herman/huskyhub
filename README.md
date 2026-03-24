@@ -141,7 +141,7 @@ Open Wireshark. Select your active network interface. Start capturing (the blue 
 **What happens at the network layer when you submit a login form:**
 When you click the login button, your browser encodes the form fields — username and password — as a URL-encoded body string in the format `username=jsmith&password=password123`. This string is placed in the body of an HTTP POST request and sent to the server. Because HuskyHub uses plain HTTP (not HTTPS), this entire request — headers, cookies, and body including the plaintext password — travels across the network as readable text. There is no encryption. Any device on the same network that is listening to the wire will see exactly what you typed.
 
-With the capture running,, navigate to `http://localhost:80/login` and submit your credentials. Stop the capture as soon as you are redirected to the home page.
+With the capture running, navigate to `http://localhost:80/login` and submit your credentials. Stop the capture as soon as you are redirected to the home page.
 
 ---
 
@@ -150,7 +150,7 @@ With the capture running,, navigate to `http://localhost:80/login` and submit yo
 **What the Wireshark filter expression matches and how packet layers work:**
 `http.request.method == "POST"` is a display filter that tells Wireshark to show only packets where the HTTP layer identifies the request method as POST. Wireshark reassembles raw TCP segments into HTTP messages and then lets you filter on fields within those messages. When you expand the **HTML Form URL Encoded** section in the packet detail pane, you are looking at the decoded form body — Wireshark has already URL-decoded the `%40` and `+` characters back to readable text. What you see there is exactly what traveled over the network.
 
-In the Wireshark filter bar, enter:, enter:
+In the Wireshark filter bar, enter:
 ```
 http.request.method == "POST"
 ```
@@ -256,7 +256,7 @@ Record all three values before continuing:
 **What IP forwarding does and why disabling it would break the attack:**
 Normally, an operating system discards IP packets addressed to other machines — it is not a router, so forwarding them is not its job. When you run `arpspoof`, the victim's traffic starts arriving at *your* machine because you have told the network you are the gateway. If IP forwarding is disabled, your machine receives those packets and drops them — the victim loses internet connectivity, which is immediately noticeable and alerts them something is wrong. Enabling IP forwarding tells the kernel to forward those packets onward to the real gateway, so traffic continues flowing transparently. From the victim's perspective, everything appears normal. `sysctl` is the Linux/macOS tool for reading and writing kernel parameters at runtime; `net.inet.ip.forwarding=1` (macOS) and `net.ipv4.ip_forward=1` (Linux) are the specific parameters that control IP forwarding.
 
-This ensures traffic continues to flow so the victim does not lose connectivity during the attack. continues to flow so the victim does not lose connectivity during the attack.
+This ensures traffic continues to flow so the victim does not lose connectivity during the attack. 
 
 **macOS:**
 ```bash
@@ -280,7 +280,7 @@ sudo sysctl -w net.ipv4.ip_forward=1
 **What ARP is, what spoofing it accomplishes, and why two terminals are required:**
 ARP (Address Resolution Protocol) is how devices on a local network discover each other's MAC addresses. When your laptop wants to send a packet to the gateway (e.g., `192.168.1.1`), it broadcasts an ARP request: "Who has IP 192.168.1.1? Tell me your MAC address." The gateway responds with its MAC, and your laptop caches that mapping. `arpspoof` exploits the fact that ARP has no authentication — any device can send an ARP reply claiming any IP-to-MAC mapping, and other devices will update their cache. By sending forged ARP replies to both the victim and the gateway, you insert your MAC into both their caches: the victim thinks you are the gateway (sends you their outbound traffic), and the gateway thinks you are the victim (sends you traffic destined for the victim). Two terminals are required because both spoofing directions must run simultaneously — stopping either one causes the respective device to correct its ARP cache.
 
-Open two terminals (or two WSL windows on Windows) on the attacker machine and run both commands simultaneously: (or two WSL windows on Windows) on the attacker machine and run both commands simultaneously:
+Open two terminals (or two WSL windows on Windows) on the attacker machine and run both commands simultaneously: 
 
 ```bash
 # Terminal 1: Tell the victim that you are the gateway
