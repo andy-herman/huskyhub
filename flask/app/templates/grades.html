@@ -66,7 +66,7 @@
       <strong>
         {% set total_pts = grades | sum(attribute='gpa_points') %}
         {% set total_credits = grades | sum(attribute='credits') %}
-        {{ "%.2f"|format(total_pts / total_credits) if total_credits else 'N/A' }}
+        {{ "%.2f"|format(total_pts / (grades | list | length)) if grades else 'N/A' }}
       </strong>
     </small>
   </p>
