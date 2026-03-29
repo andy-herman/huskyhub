@@ -120,22 +120,6 @@ The following accounts are available. Full credentials are in `database/init.sql
 
 ---
 
-## Part 3: AI Advisor Setup (Week 9 Only)
-
-The AI Academic Advisor uses [Ollama](https://ollama.com/) running locally inside Docker. The model (~2 GB) is not downloaded automatically. Your teaching team will give you advance notice before Week 9.
-
-When ready, run:
-
-```bash
-docker compose --profile ai up -d
-docker exec -it huskyhub-ollama ollama pull llama3.2
-docker compose restart huskyhub-flask
-```
-
-The chatbot will be available at `/chatbot`. If Ollama is not running, the chatbot returns a placeholder and does not affect any lab before Week 9.
-
----
-
 ## Weekly Lab Instructions
 
 Each week a new branch is released on GitHub containing that week's lab instructions. Switch to the correct branch before starting each lab.
