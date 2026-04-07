@@ -12,15 +12,15 @@ No remediation this week. The goal is to viscerally understand why encryption in
 
 ---
 
-## ⚠️ Network and Acceptable Use Policy Warning
+## Warning — Network and Acceptable Use Policy
 
-**Do NOT perform the ARP spoofing portion of this lab (Steps 6–11) on the UW campus network or any school-provided wifi.**
+**Do NOT perform the ARP spoofing portion of this lab (Steps 6-11) on the UW campus network or any school-provided wifi.**
 
 ARP spoofing poisons ARP caches across your entire network subnet — not just between you and your lab partner. On a shared school network this affects other users' traffic and constitutes unauthorized interference with a computer network, which violates the UW Acceptable Use Policy and may violate the Computer Fraud and Abuse Act (18 U.S.C. § 1030).
 
-**Required setup for Steps 6–11:** Both you and your lab partner must be connected to an **isolated local network** — a personal mobile hotspot, a home router, or a dedicated lab switch. The key requirement is that no other people are on the same network segment during the exercise.
+**Required setup for Steps 6-11:** Both you and your lab partner must be connected to an **isolated local network** — a personal mobile hotspot, a home router, or a dedicated lab switch. The key requirement is that no other people are on the same network segment during the exercise.
 
-Steps 1–5 (Wireshark on your own localhost traffic) are safe to perform anywhere.
+Steps 1-5 (Wireshark on your own localhost traffic) are safe to perform anywhere.
 
 ---
 
@@ -29,56 +29,41 @@ Steps 1–5 (Wireshark on your own localhost traffic) are safe to perform anywhe
 | Tool | Purpose |
 |------|---------|
 | Wireshark | Packet capture and traffic analysis |
-| arpspoof (dsniff package) | ARP spoofing to position yourself as a MITM |
+| Scapy (Python library) | ARP spoofing to position yourself as a MITM |
 | Terminal | Execute commands |
 | ip / ifconfig / ipconfig | Identify network interfaces and IP addresses |
 | Browser Developer Tools | Manually set cookies |
 
 ### Installing Tools by Platform
 
-**macOS (Intel):**
+**macOS (all hardware including M1/M2/M3):**
 ```bash
-brew install wireshark dsniff
-```
-
-**macOS (Apple Silicon — M1/M2/M3):**
-
-`dsniff` does not always build cleanly on Apple Silicon via Homebrew. Use the following approach instead:
-
-```bash
-# Install Wireshark (use the native ARM .dmg from wireshark.org, not brew)
+# Install Wireshark — use the native .dmg from wireshark.org (not brew)
 # Download from: https://www.wireshark.org/download.html
-# Select "macOS Arm Disk Image"
+# Select the appropriate disk image for your hardware (Intel or Apple Silicon)
 
-# Install dsniff via Rosetta-enabled Homebrew as a fallback
-arch -x86_64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-arch -x86_64 /usr/local/bin/brew install dsniff
+# Install Scapy
+pip3 install scapy
 ```
 
-If the Rosetta Homebrew approach is too cumbersome, use `scapy` as a drop-in replacement for `arpspoof` (see the **Apple Silicon Alternative** box in Step 8 below).
-
-> If `brew` is not installed at all, run the one-liner at [brew.sh](https://brew.sh) first.
+> If `pip3` is not available, install Python 3 from [python.org](https://www.python.org/downloads/) first.
 
 **Linux (Debian/Ubuntu):**
 ```bash
-sudo apt update && sudo apt install wireshark dsniff
+sudo apt update && sudo apt install wireshark python3-pip
+pip3 install scapy
 ```
+
 > During Wireshark install, select **Yes** when asked whether non-root users may capture packets.
 
 **Windows:**
-- Download Wireshark from [wireshark.org/download](https://www.wireshark.org/download.html) and install normally.
-- `arpspoof` (from the dsniff package) does not have an official Windows build. Windows users must use **WSL 2** (Windows Subsystem for Linux) to run arpspoof.
-
-**Installing WSL 2 on Windows (required for arpspoof):**
+- Download Wireshark from [wireshark.org/download](https://www.wireshark.org/download.html) and install normally. The installer will offer to install **Npcap** — accept this, as Scapy requires it for raw packet capture on Windows.
+- Open PowerShell and install Scapy:
 ```powershell
-# Run in PowerShell as Administrator
-wsl --install
-# Restart your machine, then open the Ubuntu app that was installed
-# Inside WSL:
-sudo apt update && sudo apt install dsniff
+pip install scapy
 ```
 
-> All `arpspoof` and `sysctl` commands in this lab must be run inside WSL on Windows. Wireshark itself runs natively in Windows.
+> All `arpspoof.py` and `arprestore.py` commands in this lab must be run in **PowerShell as Administrator** on Windows.
 
 ---
 
@@ -114,11 +99,6 @@ If you are connected to a **phone hotspot** (your phone sharing its data to your
 ipconfig
 ```
 
-**Windows (WSL):**
-```bash
-ip addr
-```
-
 Record your IP address and the name of the active interface.
 
 ---
@@ -130,7 +110,7 @@ Wireshark is a packet analyzer. It places your network interface into "promiscuo
 
 Open Wireshark. Select your active network interface. Start capturing (the blue shark fin button) **before** you log in.
 
-> **macOS note:** If no interfaces appear, open System Preferences → Privacy & Security → and grant Wireshark permission to capture packets, then relaunch.
+> **macOS note:** If no interfaces appear, open System Preferences -> Privacy & Security and grant Wireshark permission to capture packets, then relaunch.
 
 > **Windows note:** Select the interface named **Loopback: lo** or **Npcap Loopback Adapter** to capture localhost traffic.
 
@@ -240,9 +220,9 @@ sudo nmap -sn 172.20.10.0/28
 sudo nmap -sn 192.168.43.0/24
 ```
 
-> **Why not `arp-scan` on Apple Silicon?** The `arp-scan` tool frequently fails to build or run correctly on M1/M2/M3 Macs via Homebrew and is not recommended for this lab. The `arp -a` approach above does not require any additional tools and is equally effective for this exercise.
-
 ---
+
+**Before the victim appears in `arp -a`, make sure they have loaded HuskyHub in their browser.** The Scapy scripts in Step 8 resolve MAC addresses via ARP at startup and will exit with an error if the target is not yet reachable. Confirming the victim appears in `arp -a` first avoids this.
 
 Record all three values before continuing:
 - Attacker IP: `_______________`
@@ -254,9 +234,9 @@ Record all three values before continuing:
 ### 7. Enable IP Forwarding on the Attacker Machine
 
 **What IP forwarding does and why disabling it would break the attack:**
-Normally, an operating system discards IP packets addressed to other machines — it is not a router, so forwarding them is not its job. When you run `arpspoof`, the victim's traffic starts arriving at *your* machine because you have told the network you are the gateway. If IP forwarding is disabled, your machine receives those packets and drops them — the victim loses internet connectivity, which is immediately noticeable and alerts them something is wrong. Enabling IP forwarding tells the kernel to forward those packets onward to the real gateway, so traffic continues flowing transparently. From the victim's perspective, everything appears normal. `sysctl` is the Linux/macOS tool for reading and writing kernel parameters at runtime; `net.inet.ip.forwarding=1` (macOS) and `net.ipv4.ip_forward=1` (Linux) are the specific parameters that control IP forwarding.
+Normally, an operating system discards IP packets addressed to other machines — it is not a router, so forwarding them is not its job. When you run the ARP spoofing script, the victim's traffic starts arriving at your machine because you have told the network you are the gateway. If IP forwarding is disabled, your machine receives those packets and drops them — the victim loses internet connectivity, which is immediately noticeable and alerts them something is wrong. Enabling IP forwarding tells the kernel to forward those packets onward to the real gateway, so traffic continues flowing transparently. From the victim's perspective, everything appears normal. `sysctl` is the Linux/macOS tool for reading and writing kernel parameters at runtime; `net.inet.ip.forwarding=1` (macOS) and `net.ipv4.ip_forward=1` (Linux) are the specific parameters that control IP forwarding.
 
-This ensures traffic continues to flow so the victim does not lose connectivity during the attack. 
+This ensures traffic continues to flow so the victim does not lose connectivity during the attack.
 
 **macOS:**
 ```bash
@@ -268,9 +248,11 @@ sudo sysctl -w net.inet.ip.forwarding=1
 sudo sysctl -w net.ipv4.ip_forward=1
 ```
 
-**Windows (WSL):**
-```bash
-sudo sysctl -w net.ipv4.ip_forward=1
+**Windows (PowerShell as Administrator):**
+```powershell
+# Windows handles IP forwarding differently — Scapy manages packet forwarding
+# at the application layer. No separate sysctl step is required on Windows.
+# Ensure PowerShell is running as Administrator before Step 8.
 ```
 
 ---
@@ -278,21 +260,30 @@ sudo sysctl -w net.ipv4.ip_forward=1
 ### 8. Execute the ARP Spoofing Attack
 
 **What ARP is, what spoofing it accomplishes, and why two terminals are required:**
-ARP (Address Resolution Protocol) is how devices on a local network discover each other's MAC addresses. When your laptop wants to send a packet to the gateway (e.g., `192.168.1.1`), it broadcasts an ARP request: "Who has IP 192.168.1.1? Tell me your MAC address." The gateway responds with its MAC, and your laptop caches that mapping. `arpspoof` exploits the fact that ARP has no authentication — any device can send an ARP reply claiming any IP-to-MAC mapping, and other devices will update their cache. By sending forged ARP replies to both the victim and the gateway, you insert your MAC into both their caches: the victim thinks you are the gateway (sends you their outbound traffic), and the gateway thinks you are the victim (sends you traffic destined for the victim). Two terminals are required because both spoofing directions must run simultaneously — stopping either one causes the respective device to correct its ARP cache.
+ARP (Address Resolution Protocol) is how devices on a local network discover each other's MAC addresses. When your laptop wants to send a packet to the gateway (e.g., `192.168.1.1`), it broadcasts an ARP request: "Who has IP 192.168.1.1? Tell me your MAC address." The gateway responds with its MAC, and your laptop caches that mapping. The spoofing script exploits the fact that ARP has no authentication — any device can send an ARP reply claiming any IP-to-MAC mapping, and other devices will update their cache. By sending forged ARP replies to both the victim and the gateway, you insert your MAC into both their caches: the victim thinks you are the gateway (sends you their outbound traffic), and the gateway thinks you are the victim (sends you traffic destined for the victim). Two terminals are required because both spoofing directions must run simultaneously — stopping either one causes the respective device to correct its ARP cache.
 
-Open two terminals (or two WSL windows on Windows) on the attacker machine and run both commands simultaneously: 
+The lab scripts are located in `labs/week-02/scripts/`. Open two terminals on the attacker machine and run both commands simultaneously:
 
 ```bash
 # Terminal 1: Tell the victim that you are the gateway
-sudo arpspoof -i <interface> -t <victim-ip> <gateway-ip>
+sudo python3 labs/week-02/scripts/arpspoof.py <interface> <victim-ip> <gateway-ip>
 
 # Terminal 2: Tell the gateway that you are the victim
-sudo arpspoof -i <interface> -t <gateway-ip> <victim-ip>
+sudo python3 labs/week-02/scripts/arpspoof.py <interface> <gateway-ip> <victim-ip>
+```
+
+**Example** (iPhone hotspot, Wi-Fi interface `en0`):
+```bash
+# Terminal 1
+sudo python3 labs/week-02/scripts/arpspoof.py en0 172.20.10.5 172.20.10.1
+
+# Terminal 2
+sudo python3 labs/week-02/scripts/arpspoof.py en0 172.20.10.1 172.20.10.5
 ```
 
 > **macOS note:** The interface will typically be `en0` (Wi-Fi) or `en1`. Confirm with `ifconfig`.
 
-> **Windows (WSL) note:** The interface inside WSL will typically be `eth0`. Confirm with `ip addr` inside WSL.
+> **Windows note:** Open both PowerShell windows as Administrator. The interface name will appear as a quoted string (e.g., `"Wi-Fi"` or `"Ethernet"`). Confirm with `ipconfig`.
 
 ---
 
@@ -301,7 +292,7 @@ sudo arpspoof -i <interface> -t <gateway-ip> <victim-ip>
 **Why the session cookie is the target and what it grants the attacker:**
 HTTP is a stateless protocol — the server has no built-in memory of who you are between requests. Session cookies solve this by storing a token that identifies your authenticated session. When the victim's browser sends any request to HuskyHub, it attaches this cookie automatically. Because you are now a man-in-the-middle receiving all their traffic, Wireshark can read the cookie value from the unencrypted HTTP stream. The Wireshark filter `ip.addr == <victim-ip> && http.cookie` narrows the capture to HTTP requests from the victim's IP that contain cookie headers. Once you have the cookie value, you do not need the victim's password — you can impersonate their authenticated session directly.
 
-While both arpspoof processes are running, start a Wireshark capture on the **attacker machine** (using the native Wireshark application on macOS or Windows) filtered to the victim's IP:
+While both arpspoof.py processes are running, start a Wireshark capture on the **attacker machine** filtered to the victim's IP:
 ```
 ip.addr == <victim-ip> && http.cookie
 ```
@@ -315,7 +306,7 @@ Ask your partner to navigate to any page in HuskyHub. Locate their session cooki
 **Why manually setting a cookie is equivalent to stealing credentials:**
 Cookies are stored by the browser and sent automatically on every request to the matching domain. The browser has no mechanism to verify that a cookie was legitimately issued by the server — it stores and transmits whatever value is present. When you open Developer Tools and manually change the `authenticated` cookie to match the victim's value, your browser will send that value on your next request to `localhost`. The server reads the cookie, recognizes it as a valid session token it previously issued, and responds as if it is talking to the victim. There is no second factor, no IP address check, no re-verification — the cookie alone is the authentication proof. This is the exact attack model that motivates the `HttpOnly` and `Secure` cookie flags you observed in Week 1: `HttpOnly` prevents JavaScript from reading the cookie (blocking XSS-based theft), and `Secure` prevents it from being sent over plain HTTP (blocking this exact interception).
 
-In your browser, open Developer Tools → **Application → Cookies → localhost**.
+In your browser, open Developer Tools -> **Application -> Cookies -> localhost**.
 
 Manually set the `authenticated` cookie to the value you captured. Set the `role` and `user_id` cookies to match what you observed.
 
@@ -326,9 +317,19 @@ Reload `http://localhost`. Document what you can now access.
 ### 11. Restore the Network
 
 **What happens to ARP caches when the attack stops and why restoration matters:**
-ARP cache entries have a time-to-live. When `arpspoof` stops sending its false replies, the victim and gateway will eventually receive legitimate ARP responses from the real owners of each IP address, and their caches will self-correct. However, "eventually" may take 60 seconds or more — the victim's traffic continues routing through your machine until the cache expires. Explicitly disabling IP forwarding after stopping `arpspoof` cuts off this residual forwarding immediately. This step is also an ethical obligation: you obtained consent from a lab partner on an isolated network, and cleanly restoring the network to its pre-attack state is part of responsible security research practice. Leaving a poisoned ARP cache and active IP forwarding running after the exercise introduces real latency and potential data exposure for your partner.
+ARP cache entries have a time-to-live. When the spoofing script stops sending its false replies, the victim and gateway will eventually receive legitimate ARP responses from the real owners of each IP address, and their caches will self-correct. However, "eventually" may take 60 seconds or more. The restoration script sends explicit ARP replies with the correct MAC addresses, repairing both caches immediately rather than waiting for TTL expiry. This step is also an ethical obligation: you obtained consent from a lab partner on an isolated network, and cleanly restoring the network to its pre-attack state is part of responsible security research practice.
 
-Stop both arpspoof processes (`Ctrl+C`). ARP caches will repair themselves within a minute. Confirm your partner's HuskyHub session is unaffected.
+Stop both `arpspoof.py` processes (`Ctrl+C`). Then run `arprestore.py` once for each direction:
+
+```bash
+# Repair the victim's ARP cache (tell them the real MAC for the gateway)
+sudo python3 labs/week-02/scripts/arprestore.py <interface> <victim-ip> <gateway-ip>
+
+# Repair the gateway's ARP cache (tell it the real MAC for the victim)
+sudo python3 labs/week-02/scripts/arprestore.py <interface> <gateway-ip> <victim-ip>
+```
+
+Confirm your partner's HuskyHub session is unaffected.
 
 Disable IP forwarding:
 
@@ -337,7 +338,7 @@ Disable IP forwarding:
 sudo sysctl -w net.inet.ip.forwarding=0
 ```
 
-**Linux / WSL:**
+**Linux:**
 ```bash
 sudo sysctl -w net.ipv4.ip_forward=0
 ```
