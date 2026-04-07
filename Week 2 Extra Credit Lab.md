@@ -454,10 +454,6 @@ Take a screenshot showing you are successfully logged in as `jsmith` and can acc
 
 ---
 
-## Hacker Mindset Prompt
+## Extra Credit Submission
 
-Reflect on the two-part journey you just completed:
-
-- **Part 1** made the cookies tamper-proof but the stolen signed cookie still granted full admin access. What does this tell you about the difference between integrity and confidentiality in security?
-- **Part 2** completed the migration. But the `Secure` flag is still missing and the application still runs on HTTP. Describe exactly what attack is still possible against a user on the same network, and what Week 3 will close.
-- **Big picture:** You implemented a fix, proved it was insufficient, then completed it. This is how real security work happens. What would have happened if a developer shipped only the Part 1 fix and considered the issue resolved?
+To get the full extra credit for this lab, you need to be able to attach all of your checkpoint screenshots appropriately labled and submitted with your lab report. 
