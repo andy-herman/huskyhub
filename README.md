@@ -347,15 +347,11 @@ sudo sysctl -w net.ipv4.ip_forward=0
 
 ## Write-Up Questions
 
-**Q1.** At what OSI layer does ARP spoofing operate? At what layer does the credential exposure occur? Explain how a Layer 2 attack enables a Layer 7 data breach.
+**Q1.** You impersonated your lab partner using only their session cookie — no password required. What does this tell you about how HuskyHub authenticates users after login? What is the difference between authentication and session management, and which one failed here?
 
-**Q2.** Paste the relevant section of your Wireshark capture showing the POST request (redact the actual password value). Which filter did you use and what field in the packet contained the credentials?
+**Q2.** At which OSI layer would HTTPS protect against each of the two attacks performed today (credential capture and cookie theft)? Would HTTPS fully prevent both? Explain any remaining risk.
 
-**Q3.** You impersonated your lab partner using only their session cookie — no password required. What does this tell you about how HuskyHub authenticates users after login? What is the difference between authentication and session management, and which one failed here?
-
-**Q4.** At which OSI layer would HTTPS protect against each of the two attacks performed today (credential capture and cookie theft)? Would HTTPS fully prevent both? Explain any remaining risk.
-
-**Q5.** The ARP spoofing attack required you to be on the same local network as your target. What are realistic scenarios in which an attacker could be on the same network as a user of a public web application?
+**Q3.** The ARP spoofing attack required you to be on the same local network as your target. What are realistic scenarios in which an attacker could be on the same network as a user of a public web application?
 
 ---
 
