@@ -236,11 +236,7 @@ Screenshot the output. All values should now be bcrypt hashes beginning with `$2
 
 **Q2.** What is a salt in the context of bcrypt? Paste one hash from your database and identify which part of the string is the salt. Why does bcrypt embed the salt in the hash output rather than storing it separately?
 
-**Q3.** Paste the Wireshark capture output from re-running the Week 2 login over HTTPS. What does the payload look like now? What protocol layer handled the encryption?
-
-**Q4.** Your certificate is self-signed. What is the difference between a self-signed certificate and one signed by a Certificate Authority? What specific attack does a CA signature protect against that your certificate does not?
-
-**Q5.** In Week 2, ARP spoofing allowed an attacker to steal a session cookie, not just credentials. Does HTTPS fully protect against session cookie theft via MITM? If not, what additional remediation is required?
+**Q3.** Your certificate is self-signed. What is the difference between a self-signed certificate and one signed by a Certificate Authority? What specific attack does a CA signature protect against that your certificate does not?
 
 ---
 
