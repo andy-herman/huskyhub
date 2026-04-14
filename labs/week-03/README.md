@@ -246,6 +246,5 @@ Cryptography is frequently implemented incorrectly not because developers are ig
 
 Reflect on:
 
-- **Contrarian:** Why is a fast hash function (like SHA-256) *worse* for passwords than a slow one (like bcrypt)? What attacker behavior does this speed difference enable?
 - **Committed:** If an attacker obtained a database full of bcrypt hashes, describe the exact process they would use to attempt to crack them. What resources would they need?
 - **Creative:** bcrypt was designed in 1999. What properties would you want in a password hashing algorithm designed today, and does bcrypt still meet them?
