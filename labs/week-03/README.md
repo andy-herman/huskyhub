@@ -33,6 +33,8 @@ In Week 2 you captured credentials in cleartext and stole a session cookie over 
 
 **Docker commands** work identically across all platforms in Terminal (macOS/Linux) or Git Bash / PowerShell (Windows).
 
+> **Note on container names:** Docker Compose prefixes container names with the project folder name. The commands in this lab use the full container names `huskyhub-huskyhub-db-1` and `huskyhub-huskyhub-flask-1`. If your containers have different names, verify with `docker compose ps`.
+
 ---
 
 ## Steps
@@ -45,7 +47,7 @@ In Week 2 you captured credentials in cleartext and stole a session cookie over 
 Connect to the running MySQL container:
 
 ```bash
-docker exec -it huskyhub-db mysql -u user -psupersecretpw huskyhub
+docker exec -it huskyhub-huskyhub-db-1 mysql -u user -psupersecretpw huskyhub
 ```
 
 Run:
@@ -93,7 +95,7 @@ def check_password(plaintext: str, hashed: str) -> bool:
 
 ---
 
-### 4. Write a Migration Script
+### 4. Write and Run a Migration Script
 
 **What a migration script is and why you cannot simply re-hash in place:**
 A migration script is a one-time program that transforms existing data from one format to another. You cannot simply overwrite passwords with their hashes in a single SQL UPDATE because you need to read each plaintext value, compute its hash, and write the result back — a row-by-row operation. After this script runs, the plaintext values no longer exist in the database. The script should be idempotent where possible (safe to run more than once), and after running it you should immediately verify the output before proceeding — a migration error that silently corrupts passwords would lock every user out of their account.
@@ -101,38 +103,70 @@ A migration script is a one-time program that transforms existing data from one 
 Create `flask/migrate_passwords.py`. This script should:
 1. Connect to the database
 2. Read every user record
-3. Hash each plaintext password using your utility function
-4. Update the record with the hash
+3. Skip any password already beginning with `$2b$` or `$2a$` (idempotency check)
+4. Hash each plaintext password using your utility function
+5. Update the record with the hash
 
-Run it against the live database:
+**Why `docker cp` and not placing the script inside `flask/app/`:**
+The Dockerfile only copies `flask/app/` into the image. Placing a one-time migration script there would permanently include it in every future production image. Instead, use `docker cp` to inject the script directly into the running container — it runs, does its job, and is never part of the image.
+
+Copy the script into the running Flask container and execute it:
 ```bash
-docker exec -it huskyhub-flask python migrate_passwords.py
+docker cp flask/migrate_passwords.py huskyhub-huskyhub-flask-1:/app/migrate_passwords.py
+docker exec -it huskyhub-huskyhub-flask-1 python migrate_passwords.py
 ```
-
-Verify in MySQL that no plaintext passwords remain.
 
 ---
 
-### 5. Update the Login Endpoint
+### 5. Update the Login and Registration Endpoints
 
 **Why the SQL query must change — not just the comparison:**
 Before this change, the login query looked something like `WHERE username = ? AND password = ?`. This passed the plaintext password directly to the database for comparison. After hashing, the database contains bcrypt strings like `$2b$12$...`, not plaintext. You cannot compare a plaintext password to a bcrypt hash in SQL — the comparison must happen in Python using `bcrypt.checkpw`. This means the new query retrieves the user *by username only*, then passes the retrieved hash and the submitted password to `check_password()`. Never pass a password hash back into a SQL query to compare it — always verify in application code.
 
-In `flask/app/routes/auth.py`, modify the login query to retrieve the user by username only (no longer include the password in the SQL query), then use `check_password()` to verify the submitted password against the stored hash.
+In `flask/app/routes/auth.py`, import both utility functions at the top:
 
-Test that existing accounts can still log in after the migration.
+```python
+from ..utils import check_password, hash_password
+```
+
+**Login:** modify the login query to retrieve the user by username only (no longer include the password in the SQL query), then use `check_password()` to verify the submitted password against the stored hash:
+
+```python
+cursor.execute(
+    "SELECT * FROM users WHERE username = %s AND approved = 1",
+    (username,)
+)
+user = cursor.fetchone()
+conn.close()
+
+if user and check_password(password, user["password"]):
+```
+
+**Registration:** call `hash_password()` before inserting the new user's password into the database. Switch the INSERT to a parameterized query and pass the hashed value:
+
+```python
+hashed = hash_password(password)
+
+cursor.execute(
+    "INSERT INTO users "
+    "(username, first_name, last_name, email, password, role, approved) "
+    "VALUES (%s, %s, %s, %s, %s, 'student', 0)",
+    (username, first_name, last_name, email, hashed)
+)
+```
+
+**Verify the database remediation:**
+
+Run the same MySQL query from Step 1:
+```bash
+docker exec -it huskyhub-huskyhub-db-1 mysql -u user -psupersecretpw huskyhub -e "SELECT username, password FROM users;"
+```
+
+Screenshot the output. All values should now be bcrypt hashes beginning with `$2b$12$`. Test that existing accounts can still log in after the migration.
 
 ---
 
-### 6. Update the Registration Endpoint
-
-In `flask/app/routes/auth.py`, modify the registration route to call `hash_password()` before inserting the new user's password into the database.
-
-Create a new test account and verify the stored value is a bcrypt hash — it should begin with `$2b$12$`.
-
----
-
-### 7. Generate a Self-Signed TLS Certificate
+### 6. Generate a Self-Signed TLS Certificate
 
 **What each flag in the OpenSSL command does:**
 `req -x509` generates a self-signed certificate (skipping the Certificate Signing Request step normally used when a CA is involved). `-newkey rsa:4096` creates a new RSA private key with a 4096-bit key length at the same time. `-keyout` and `-out` specify where to save the private key and certificate respectively. `-days 365` sets the certificate to expire in one year. `-nodes` (from "no DES") means the private key is saved without password encryption — necessary because nginx needs to read it automatically at startup without prompting. `-subj` provides the certificate's subject fields inline so OpenSSL does not prompt interactively; `CN=localhost` sets the Common Name, which browsers check against the hostname they are connecting to.
@@ -161,7 +195,7 @@ This generates a private key and a self-signed certificate in the `nginx/` direc
 
 ---
 
-### 8. Configure nginx for HTTPS
+### 7. Configure nginx for HTTPS
 
 **What the nginx configuration changes accomplish at the network level:**
 The first server block listens on port 80 (HTTP) and immediately issues an HTTP 301 redirect to the HTTPS version of the same URL. This means any client that connects over plain HTTP is immediately instructed to reconnect over HTTPS — the unencrypted connection never carries any application data. The second block listens on port 443 (HTTPS), loads the certificate and private key, and proxies requests to the Flask container. `ssl_certificate` contains the public certificate sent to clients; `ssl_certificate_key` contains the private key used to decrypt the session. The private key never leaves the server. `proxy_set_header X-Real-IP` passes the client's original IP address to Flask, which nginx would otherwise mask behind its own internal IP.
@@ -206,7 +240,7 @@ Rebuild and navigate to `https://localhost`. Accept the browser certificate warn
 
 ---
 
-### 9. Re-run the Week 2 Wireshark Capture
+### 8. Re-run the Week 2 Wireshark Capture
 
 **What TLS does to the packet contents Wireshark sees:**
 TLS (Transport Layer Security) encrypts the entire HTTP payload between the client and the server using a symmetric key negotiated during the TLS handshake. Wireshark can still capture the packets, but it sees only the encrypted ciphertext — it cannot recover the HTTP headers, the POST body, or the session cookies from those packets without the server's private key. This is what "encryption in transit" means: the data is present on the wire, but it is computationally infeasible to read without the key.
@@ -216,17 +250,6 @@ With Wireshark capturing, log in over `https://localhost`. Apply the same POST f
 > **macOS note:** To capture `localhost` HTTPS traffic in Wireshark, select the **Loopback (lo0)** interface.
 
 > **Windows note:** Select the **Npcap Loopback Adapter** interface.
-
----
-
-### 10. Verify the Database Remediation
-
-Run the same MySQL query from Step 1:
-```sql
-SELECT username, password FROM users;
-```
-
-Screenshot the output. All values should now be bcrypt hashes beginning with `$2b$12$`.
 
 ---
 
