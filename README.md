@@ -194,15 +194,11 @@ Write a short policy (3–5 sentences) for the HuskyHub development team coverin
 
 ## Write-Up Questions
 
-**Q1.** List every piece of internal information exposed by the verbose errors you triggered in Step 1. For each item, explain specifically how an attacker would use it in a follow-on attack.
+**Q1.** What is the principle of least information in the context of error handling? How does your global error handler implement this principle, and why is this different from "security through obscurity"?
 
-**Q2.** Paste one JSON log entry for each of your four log event types. Explain why each field in the structured format is useful for incident response.
+**Q2.** Present your pip-audit results as a table. For the highest-severity CVE you researched, describe the full attack chain: how an attacker discovers the vulnerable version, how they exploit it, and what they can achieve against HuskyHub.
 
-**Q3.** What is the principle of least information in the context of error handling? How does your global error handler implement this principle, and why is this different from "security through obscurity"?
-
-**Q4.** Present your pip-audit results as a table. For the highest-severity CVE you researched, describe the full attack chain: how an attacker discovers the vulnerable version, how they exploit it, and what they can achieve against HuskyHub.
-
-**Q5.** The Thursday lecture covered third-party risk. What is a software supply chain attack? How does the SolarWinds breach illustrate that dependency risk extends beyond known CVEs in publicly listed packages?
+**Q3.** The Thursday lecture covered third-party risk. What is a software supply chain attack? How does the SolarWinds breach illustrate that dependency risk extends beyond known CVEs in publicly listed packages?
 
 ---
 
