@@ -186,12 +186,6 @@ Select the highest-severity CVE from your audit. Look it up at [nvd.nist.gov](ht
 
 ---
 
-### 9. Write a Dependency Management Policy
-
-Write a short policy (3–5 sentences) for the HuskyHub development team covering: how often dependency audits should run, what the escalation path is for a critical CVE, and whether direct or transitive dependencies should be included.
-
----
-
 ## Write-Up Questions
 
 **Q1.** What is the principle of least information in the context of error handling? How does your global error handler implement this principle, and why is this different from "security through obscurity"?
