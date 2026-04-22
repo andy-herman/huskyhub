@@ -144,6 +144,10 @@ Trigger each of the four log events. Then read the log file:
 ```bash
 docker exec -it huskyhub-flask cat /var/log/huskyhub/app.log
 ```
+If that doesn't work try:
+```bash
+docker exec -it huskyhub-huskyhub-flask-1 cat /var/log/huskyhub/app.log
+```
 
 Paste at least one log entry per event type in your report. Confirm the JSON structure includes timestamp, level, user, and endpoint fields.
 
