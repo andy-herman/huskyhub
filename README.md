@@ -54,10 +54,10 @@ http://localhost/nonexistent-page
 http://localhost/documents/download?file=/etc/passwd
 ```
 
-For each response, document:
+For the first response, document:
 - The HTTP status code
 - Every internal detail exposed (stack traces, file paths, library versions, database errors, SQL queries)
-
+- Ensure that you still take a note of the other 3 pages, you will review them again later.
 ---
 
 ### 2. Analyze What an Attacker Learns
