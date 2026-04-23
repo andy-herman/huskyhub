@@ -54,15 +54,15 @@ http://localhost/nonexistent-page
 http://localhost/documents/download?file=/etc/passwd
 ```
 
-For each response, document:
+For the first response, document:
 - The HTTP status code
 - Every internal detail exposed (stack traces, file paths, library versions, database errors, SQL queries)
-
+- Ensure that you still take a note of the other 3 pages, you will review them again later.
 ---
 
 ### 2. Analyze What an Attacker Learns
 
-For each error response, write a structured analysis: what was revealed, and how would an attacker use that specific piece of information in a subsequent attack? Be specific — "file paths were revealed" is not sufficient; "the path `/app/routes/grades.py` was revealed, telling the attacker the Flask routes are organized in an `app/routes/` directory which matches standard Flask project structure" is.
+For the first error response, write a structured analysis: what was revealed, and how would an attacker use that specific piece of information in a subsequent attack? Be specific — "file paths were revealed" is not sufficient; "the path `/app/routes/grades.py` was revealed, telling the attacker the Flask routes are organized in an `app/routes/` directory which matches standard Flask project structure" is.
 
 ---
 
@@ -144,6 +144,10 @@ Trigger each of the four log events. Then read the log file:
 ```bash
 docker exec -it huskyhub-flask cat /var/log/huskyhub/app.log
 ```
+If that doesn't work try:
+```bash
+docker exec -it huskyhub-huskyhub-flask-1 cat /var/log/huskyhub/app.log
+```
 
 Paste at least one log entry per event type in your report. Confirm the JSON structure includes timestamp, level, user, and endpoint fields.
 
@@ -186,23 +190,13 @@ Select the highest-severity CVE from your audit. Look it up at [nvd.nist.gov](ht
 
 ---
 
-### 9. Write a Dependency Management Policy
-
-Write a short policy (3–5 sentences) for the HuskyHub development team covering: how often dependency audits should run, what the escalation path is for a critical CVE, and whether direct or transitive dependencies should be included.
-
----
-
 ## Write-Up Questions
 
-**Q1.** List every piece of internal information exposed by the verbose errors you triggered in Step 1. For each item, explain specifically how an attacker would use it in a follow-on attack.
+**Q1.** What is the principle of least information in the context of error handling? How does your global error handler implement this principle, and why is this different from "security through obscurity"?
 
-**Q2.** Paste one JSON log entry for each of your four log event types. Explain why each field in the structured format is useful for incident response.
+**Q2.** Present your pip-audit results as a table. For the highest-severity CVE you researched, describe the full attack chain: how an attacker discovers the vulnerable version, how they exploit it, and what they can achieve against HuskyHub.
 
-**Q3.** What is the principle of least information in the context of error handling? How does your global error handler implement this principle, and why is this different from "security through obscurity"?
-
-**Q4.** Present your pip-audit results as a table. For the highest-severity CVE you researched, describe the full attack chain: how an attacker discovers the vulnerable version, how they exploit it, and what they can achieve against HuskyHub.
-
-**Q5.** The Thursday lecture covered third-party risk. What is a software supply chain attack? How does the SolarWinds breach illustrate that dependency risk extends beyond known CVEs in publicly listed packages?
+**Q3.** The Thursday lecture covered third-party risk. What is a software supply chain attack? How does the SolarWinds breach illustrate that dependency risk extends beyond known CVEs in publicly listed packages?
 
 ---
 
