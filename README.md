@@ -199,13 +199,9 @@ Repeat Steps 2–5 against the hardened application. For each:
 
 **Q1.** Describe the session fixation attack in your own words. What precondition must an attacker satisfy before the victim logs in, and what does session rotation prevent?
 
-**Q2.** Paste your brute force script with comments. How many requests per second did it achieve? Calculate: how long would it take to brute force a 6-character lowercase alphabetic password at this rate?
+**Q2.** Your account lockout returns the same error message whether the password is wrong or the account is locked. Why? What attack does this generic message prevent?
 
-**Q3.** What is the difference between a signed cookie (Flask session) and an encrypted cookie? What does signing protect against, and what does it not protect against?
-
-**Q4.** Your account lockout returns the same error message whether the password is wrong or the account is locked. Why? What attack does this generic message prevent?
-
-**Q5.** Multi-factor authentication (MFA) would have made your brute force attack ineffective. At exactly what point in the authentication flow does MFA intervene? Why does MFA not eliminate the need for strong password policies and account lockout?
+**Q3.** Multi-factor authentication (MFA) would have made your brute force attack ineffective. At exactly what point in the authentication flow does MFA intervene? Why does MFA not eliminate the need for strong password policies and account lockout?
 
 ---
 
