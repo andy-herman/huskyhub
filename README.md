@@ -177,13 +177,11 @@ Paste the HTTP responses in your report.
 
 **Q1.** Define Insecure Direct Object Reference (IDOR) in your own words. Why does hiding the edit button in the UI fail to prevent IDOR? What is the only reliable place to enforce access control?
 
-**Q2.** Present all IDOR and broken access control findings as a table with columns: Endpoint, HTTP Method, Vulnerable Parameter, Data/Action Exposed, Severity.
+**Q2.** Explain the difference between role-based access control (RBAC) and attribute-based access control (ABAC). Which model does your remediation implement? What scenario would require ABAC instead?
 
-**Q3.** Explain the difference between role-based access control (RBAC) and attribute-based access control (ABAC). Which model does your remediation implement? What scenario would require ABAC instead?
+**Q3.** Before your remediation, the admin routes checked `request.cookies.get('role')`. After, they check `session.get('role')`. Why is the session-based check more trustworthy than the cookie-based check, even after the Week 5 session signing fix?
 
-**Q4.** Before your remediation, the admin routes checked `request.cookies.get('role')`. After, they check `session.get('role')`. Why is the session-based check more trustworthy than the cookie-based check, even after the Week 5 session signing fix?
-
-**Q5.** Burp Intruder enumerated student IDs 1–20 in seconds. What would a script that automated this against a production application need to do to avoid triggering detection? What defenses would slow it down?
+**Q4.** Burp Intruder enumerated student IDs 1–20 in seconds. What would a script that automated this against a production application need to do to avoid triggering detection? What defenses would slow it down?
 
 ---
 
