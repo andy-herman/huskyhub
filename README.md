@@ -179,9 +179,7 @@ Paste the HTTP responses in your report.
 
 **Q2.** Explain the difference between role-based access control (RBAC) and attribute-based access control (ABAC). Which model does your remediation implement? What scenario would require ABAC instead?
 
-**Q3.** Before your remediation, the admin routes checked `request.cookies.get('role')`. After, they check `session.get('role')`. Why is the session-based check more trustworthy than the cookie-based check, even after the Week 5 session signing fix?
-
-**Q4.** Burp Intruder enumerated student IDs 1–20 in seconds. What would a script that automated this against a production application need to do to avoid triggering detection? What defenses would slow it down?
+**Q3.** Burp Intruder enumerated student IDs 1–20 in seconds. What would a script that automated this against a production application need to do to avoid triggering detection? What defenses would slow it down?
 
 ---
 
