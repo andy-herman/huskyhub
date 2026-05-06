@@ -52,7 +52,7 @@ Navigate to your own grades:
 http://localhost/grades?student_id=3
 ```
 
-Now change the `student_id` to each value from 3 to 11. For each, record:
+Now change the `student_id` to each value from 3 to 7. For each, record:
 - Whether the request succeeds
 - Whose record was returned
 - What grade data is exposed
