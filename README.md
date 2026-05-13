@@ -220,7 +220,7 @@ Apply this change to every route: `auth.py`, `grades.py`, `enrollment.py`, `mess
 
 ### 9. Verify the Remediation
 
-Repeat Steps 3–6 against the hardened application. Paste the sqlmap output showing that injection is no longer possible. Confirm the login bypass payloads return an authentication error.
+Repeat Steps 3–5 against the hardened application. Paste the sqlmap output showing that injection is no longer possible. Confirm the login bypass payloads return an authentication error.
 
 ---
 
