@@ -228,13 +228,9 @@ Repeat Steps 3–6 against the hardened application. Paste the sqlmap output sho
 
 **Q1.** Present your completed STRIDE table. For the login form specifically, write one concrete threat per STRIDE category.
 
-**Q2.** Paste the exact payload you used to achieve login bypass and draw out the resulting SQL query with your payload inserted. Explain precisely why it works against a string-concatenated query.
+**Q2.** Explain how a parameterized query prevents SQL injection at a technical level. Why does escaping input without parameterization (e.g., `real_escape_string`) fail to provide equivalent protection?
 
-**Q3.** The UNION-based injection in Step 4 requires knowing the number of columns in the original query. How did you determine the correct column count? What does this tell you about the reconnaissance phase of a SQL injection attack?
-
-**Q4.** Explain how a parameterized query prevents SQL injection at a technical level. Why does escaping input without parameterization (e.g., `real_escape_string`) fail to provide equivalent protection?
-
-**Q5.** Map the vulnerabilities you have found across all labs so far (Weeks 1–7) to the OWASP Top 10. For each applicable category, identify the OWASP entry and the corresponding HuskyHub vulnerability.
+**Q3.** Map the vulnerabilities you have found across all labs so far (Weeks 1–7) to the OWASP Top 10. For each applicable category, identify the OWASP entry and the corresponding HuskyHub vulnerability.
 
 ---
 
