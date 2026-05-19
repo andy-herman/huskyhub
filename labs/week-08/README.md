@@ -189,6 +189,11 @@ Add the following header in `nginx/default.conf` inside the HTTPS server block:
 add_header Content-Security-Policy "default-src 'self'; script-src 'self'" always;
 ```
 
+If that breaks the look of your website add the following instead:
+```nginx
+add_header Content-Security-Policy "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' https://cdn.jsdelivr.net" always;
+```
+
 Reload nginx. In Developer Tools → Network, verify the `Content-Security-Policy` header is present on responses.
 
 Re-run Step 3's cookie-stealing payload. Open the browser console and document what error appears.
