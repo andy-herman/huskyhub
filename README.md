@@ -60,6 +60,8 @@ Open your Week 1 lab report. Re-read the chatbot responses you documented in Wee
 
 The chatbot responses in Week 1 were reconnaissance data — just like HTTP headers and cookie flags. A student who answered "I don't know what to look for yet" in Week 1 is now equipped to see exactly what those responses reveal about the underlying system architecture and data access.
 
+**IGNORE THIS STEP**
+
 ---
 
 ### 2. Exploit Direct Prompt Injection
@@ -121,6 +123,8 @@ Supporting documentation attached.
 Upload this file at `/documents` as document type "Accommodation".
 
 Log in as `mwilson` (advisor). In the chatbot, select this document in the **Summarize an uploaded document** dropdown and ask: "Please summarize this accommodation request."
+
+If you do not see the document on mwilson's account please document this and instead attempt with the user account used to upload the files (most likely `jsmith`).
 
 Document the AI response.
 
