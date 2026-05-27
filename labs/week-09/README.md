@@ -235,15 +235,13 @@ def test_xss_not_executed_in_ai_output():
 
 ## Write-Up Questions
 
-**Q1.** Return to your Week 1 chatbot notes. Which responses from Week 1 were early indicators of the vulnerabilities you exploited today? What does this tell you about the relationship between reconnaissance and exploitation?
+**Q1.** Explain the difference between direct prompt injection and indirect prompt injection. Why is indirect injection via uploaded documents particularly dangerous in an application where the AI is used by privileged users such as advisors?
 
-**Q2.** Explain the difference between direct prompt injection and indirect prompt injection. Why is indirect injection via uploaded documents particularly dangerous in an application where the AI is used by privileged users such as advisors?
+**Q2.** In Step 7, the AI was used as a delivery mechanism for XSS — a vulnerability you learned in Week 8. What does this demonstrate about the relationship between AI security and traditional web application security?
 
-**Q3.** In Step 7, the AI was used as a delivery mechanism for XSS — a vulnerability you learned in Week 8. What does this demonstrate about the relationship between AI security and traditional web application security?
+**Q3.** Your system prompt hardening in Step 8 reduced the risk of prompt injection. Why is input filtering alone insufficient as the sole defense? What architectural controls would provide stronger guarantees?
 
-**Q4.** Your system prompt hardening in Step 8 reduced the risk of prompt injection. Why is input filtering alone insufficient as the sole defense? What architectural controls would provide stronger guarantees?
-
-**Q5.** Referencing the Week 1 Thursday lecture on AI Risk and Ethics, which of the AI-related risks discussed in lecture did you observe or exploit in this lab? How do the NIST AI Risk Management Framework categories apply to the vulnerabilities you found?
+**Q4.** Referencing the Week 1 Thursday lecture on AI Risk and Ethics, which of the AI-related risks discussed in lecture did you observe or exploit in this lab? How do the NIST AI Risk Management Framework categories apply to the vulnerabilities you found?
 
 ---
 
