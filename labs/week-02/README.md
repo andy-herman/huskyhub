@@ -63,7 +63,7 @@ pip3 install scapy
 pip install scapy
 ```
 
-> All `arpspoof.py` and `arprestore.py` commands in this lab must be run in **PowerShell as Administrator** on Windows.
+> All `arpspoof.py` and `arprestore.py` commands in this lab must be run in **PowerShell as Administrator** on Windows. On Windows, run the commands shown below as `sudo python3 …` instead as `python …` (no `sudo`) in that elevated PowerShell.
 
 ---
 
@@ -108,11 +108,15 @@ Record your IP address and the name of the active interface.
 **What Wireshark does and what "capturing on an interface" means:**
 Wireshark is a packet analyzer. It places your network interface into "promiscuous mode," which instructs the network adapter to pass every packet it sees to the operating system rather than only packets addressed to your machine. Wireshark then records those packets — including the full contents of each one — to a capture buffer. Every HTTP request your browser sends and every response the server returns passes through your network interface as raw bytes. On an unencrypted HTTP connection, those bytes include plaintext headers, form data, cookies, and response bodies. The filter `http.request.method == "POST"` narrows the display to only packets containing an HTTP POST request — the type your browser sends when you submit a login form.
 
-Open Wireshark. Select your active network interface. Start capturing (the blue shark fin button) **before** you log in.
+Open Wireshark. Because HuskyHub runs on `localhost`, your login traffic travels over the **loopback interface**, not your Wi-Fi or Ethernet adapter — select the loopback interface so the capture can see it:
+
+- **macOS:** `lo0`
+- **Linux:** `lo` (or the `any` pseudo-interface)
+- **Windows:** `Npcap Loopback Adapter` (enable Npcap's loopback support during installation if it is not listed)
+
+Start capturing (the blue shark fin button) **before** you log in. The active interface you identified in Step 1 is not used here — you will use it later for the MITM capture in Steps 6–9.
 
 > **macOS note:** If no interfaces appear, open System Preferences -> Privacy & Security and grant Wireshark permission to capture packets, then relaunch.
-
-> **Windows note:** Select the interface named **Loopback: lo** or **Npcap Loopback Adapter** to capture localhost traffic.
 
 ---
 
