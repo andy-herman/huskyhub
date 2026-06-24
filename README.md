@@ -4,6 +4,8 @@
 
 ---
 
+> **New to the terminal, or stuck on setup?** See the **[Setup & Troubleshooting Guide](TROUBLESHOOTING.md)** for terminal basics and per-week Windows/Mac fixes.
+
 ## Overview
 
 In Week 2 you captured credentials in cleartext and stole a session cookie over an unencrypted connection. This week you fix both of those problems. You will replace plaintext password storage with bcrypt hashing, configure HTTPS using a self-signed certificate, and verify each remediation by re-running the Week 2 attacks and documenting the difference in outcome.
