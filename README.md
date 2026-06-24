@@ -63,14 +63,19 @@ Document whether any server-side check is performed to verify the requesting use
 
 ### 3. Exploit Broken Access Control on Admin Routes
 
-While logged in as `jsmith` (a student), directly navigate to:
+While logged in as `jsmith` (a student), directly navigate to each of these routes:
 ```
 http://localhost/admin/users
 http://localhost/admin/grades
 http://localhost/admin/pending
 ```
 
-For each route, document whether access is granted and what data or actions are exposed. Note that you changed no cookies and sent no special headers — you simply navigated to a URL.
+For each route, document whether access is granted and what is exposed. They behave differently:
+
+- `/admin/grades` has **no server-side authorization check at all** — it returns every student's grades to any logged-in user. You changed no cookies and sent no special headers; you simply navigated to a URL. This is broken access control via forced browsing.
+- `/admin/users` and `/admin/pending` **do** check the `role` cookie and redirect you back to the home page when it is not `admin`. As a student you are blocked here — but recall from Week 5 that the `role` cookie is forgeable, so reaching these two requires forging `role=admin`, not merely navigating.
+
+Document which routes enforce a check, which do not, and exactly what each exposes.
 
 ---
 
@@ -110,7 +115,7 @@ Then use **Intruder** to automate this:
 
 ### 6. Find a Second IDOR Endpoint
 
-Using Burp's history or by manually browsing, identify at least one additional endpoint vulnerable to IDOR beyond `/grades`. Candidates include `/documents/download`, `/enrollment`, and the message endpoint.
+Using Burp's history or by manually browsing, identify at least one additional endpoint vulnerable to IDOR beyond `/grades`. Strong candidates: `/documents/download` (references a file path directly), `/documents/delete` (`doc_id`), and `/enrollment/drop` (`enrollment_id`). Note that `/enrollment` and `/messages` read your `user_id` from the **cookie** rather than a URL parameter — those are exploited by cookie tampering (Week 5), not by IDOR on a request parameter.
 
 Document: the endpoint, the vulnerable parameter, and what data or action is exposed.
 
@@ -120,6 +125,8 @@ Document: the endpoint, the vulnerable parameter, and what data or action is exp
 
 **What a Python decorator is and why this pattern is the right approach for authorization:**
 A decorator in Python is a function that wraps another function, adding behavior before or after the wrapped function runs. `@require_role('admin')` placed above a route function means "before executing this route, run the `require_role` check — if it fails, abort; if it passes, run the route as normal." The value of this pattern is consistency: rather than copying an `if role != 'admin': abort(403)` check into every protected route (and risking forgetting it), you define the check once and apply it as a decorator. `functools.wraps(f)` copies metadata from the original function to the wrapper so Flask's routing system can still identify the function correctly. `abort(403)` immediately terminates the request with an HTTP 403 Forbidden response.
+
+> **Builds on Week 5.** These decorators read the user's role and id from Flask's signed `session` (`session.get('role')`, `session.get('user_id')`), which assumes you completed Week 5's migration from plaintext cookies to signed sessions. If you have not done that migration yet, complete it first — otherwise read from `request.cookies` here instead.
 
 Create a reusable authorization decorator in `flask/app/auth_utils.py`:
 
