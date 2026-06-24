@@ -4,6 +4,8 @@
 
 ---
 
+> **New to the terminal, or stuck on setup?** See the **[Setup & Troubleshooting Guide](TROUBLESHOOTING.md)** for terminal basics and per-week Windows/Mac fixes.
+
 ## Overview
 
 Stored XSS is present in two places: the messaging system renders message bodies with `| safe`, and advising notes do the same. This week you exploit both, run OWASP ZAP against the full application, and compare automated tool findings against everything you have found manually across all eight weeks. You will then remediate XSS through output encoding and implement a Content Security Policy.
