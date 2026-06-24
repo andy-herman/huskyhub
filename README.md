@@ -4,6 +4,8 @@ Welcome to the **HuskyHub Student Services Portal**! HuskyHub is a student-facin
 
 Your supervisor has decided HuskyHub should be made available to the broader student body by the end of the quarter. You know that in the application's current state there are numerous security issues that need to be addressed before it can be safely released. Over the next several weeks you will apply what you learn in lecture to identify vulnerabilities, exploit them, remediate them, and verify that the application maintains its functionality. By the end of the quarter you will have a significantly more secure HuskyHub.
 
+> **New to the terminal, or something won't run?** Start with the **[Setup & Troubleshooting Guide](TROUBLESHOOTING.md)**. It walks you through opening a terminal, installing every tool, and the specific problems that come up in each week's lab — written for both Windows and Mac.
+
 ---
 
 ## Docker Basics
@@ -214,6 +216,8 @@ make reset
 ---
 
 ## Common Issues
+
+> For a much fuller, beginner-friendly version of this section — covering terminal basics and per-week tool problems on Windows and Mac — see the **[Setup & Troubleshooting Guide](TROUBLESHOOTING.md)**.
 
 ### "Cannot connect to the Docker daemon"
 Docker Desktop is not running. Open Docker Desktop and wait for the engine status indicator to turn green before retrying.
