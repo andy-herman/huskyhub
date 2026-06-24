@@ -4,6 +4,8 @@
 
 ---
 
+> **New to the terminal, or stuck on setup?** See the **[Setup & Troubleshooting Guide](TROUBLESHOOTING.md)** for terminal basics and per-week Windows/Mac fixes.
+
 ## Overview
 
 SQL injection is present in the login form, the grades search endpoint, and the enrollment search endpoint. This week you will apply STRIDE and DREAD to formally model the threat landscape, then exploit each injection point using manual payloads and sqlmap. You will remediate all injection points with parameterized queries and verify the fix.
