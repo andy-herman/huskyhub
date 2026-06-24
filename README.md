@@ -4,6 +4,8 @@
 
 ---
 
+> **New to the terminal, or stuck on setup?** See the **[Setup & Troubleshooting Guide](TROUBLESHOOTING.md)** for terminal basics and per-week Windows/Mac fixes.
+
 ## Overview
 
 HuskyHub has three deliberate authentication failures: the session token is not rotated after login (session fixation), the authentication cookies contain plaintext identity values and are trusted server-side without cryptographic validation (cookie forgery), and there is no account lockout mechanism (brute force). This week you exploit each, then remediate each. The midterm is Thursday — the lab is scoped so exploitation can be completed in the lab session and remediation taken home.
