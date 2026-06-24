@@ -35,15 +35,21 @@ cd huskyhub
 
 ### 3. Create Your `.env` File
 
-Inside the `huskyhub` folder, create a new file called `.env`. This file contains the environment variables needed to run the database. Our `.gitignore` prevents this file from being committed so that credentials are never exposed.
+Inside the `huskyhub` folder, create your `.env` file by copying the provided example. This file contains the environment variables needed to run the database. Our `.gitignore` prevents it from being committed so that credentials are never exposed.
 
-Copy and paste the following into `.env`:
+```bash
+cp .env.example .env          # macOS / Linux / Git Bash
+# Copy-Item .env.example .env  # Windows PowerShell
+```
+
+For reference, `.env.example` contains:
 
 ```
 MYSQL_USER=user
 MYSQL_PASSWORD=supersecretpw
 MYSQL_DATABASE=huskyhub
 MYSQL_PORT=3306
+FLASK_SECRET_KEY=dev-secret-huskyhub-2024
 ```
 
 ### 4. Start the Application
@@ -51,12 +57,10 @@ MYSQL_PORT=3306
 In your terminal, run:
 
 ```bash
-cp .env.example .env       # macOS / Linux / Git Bash
-# Copy-Item .env.example .env  # Windows PowerShell
 docker compose up --build
 ```
 
-This pulls the Docker images and deploys them into containers. Wait until all three containers report as healthy. To shut down, press `Ctrl + C`.
+This pulls the Docker images and deploys them into containers. Wait until the database container reports as healthy and all three containers show as running. To shut down, press `Ctrl + C`.
 
 ### 5. Access the Application
 
@@ -143,7 +147,7 @@ git fetch
 git checkout week-02
 ```
 
-Lab instructions for each week are in `labs/week-XX/README.md`.
+Each week's lab is the root `README.md` on that week's branch (this front page is the Week 1 lab).
 
 ---
 
@@ -240,7 +244,9 @@ Run `docker compose logs huskyhub-flask` to see the error. The most common cause
 
 ## Weekly Lab Branch Workflow
 
-Each week's lab instructions are in the corresponding branch (`week-02`, `week-03`, etc.). To switch to a new week's branch without losing your work:
+> **Keep one working copy and carry your fixes forward.** Each week's branch delivers new lab instructions and assets — it does **not** reset your code to a fresh vulnerable state. From Week 3 onward you will harden the application, and later labs build on those earlier fixes (for example, Week 6's authorization checks rely on Week 5's signed sessions, and Week 8's Content Security Policy relies on Week 3's HTTPS). Commit your hardening to a personal branch and merge each week's lab branch into it, rather than starting over each week.
+
+Each week's lab is the root `README.md` on the corresponding branch (`week-02`, `week-03`, etc.). To pull in a new week's lab without losing your work:
 
 ```bash
 # Save any local changes before switching branches
