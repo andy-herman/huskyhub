@@ -60,7 +60,7 @@ def add_enrollment():
 
     user_id = request.cookies.get("user_id")
     course_id = request.form.get("course_id")
-    quarter = request.form.get("quarter", "Spring 2025")
+    quarter = request.form.get("quarter", "Spring 2026")
 
     conn = get_connection()
     cursor = conn.cursor()
