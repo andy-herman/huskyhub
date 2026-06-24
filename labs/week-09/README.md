@@ -34,6 +34,8 @@ docker compose restart huskyhub-flask
 
 > If `docker compose` is not found, try `docker-compose` (with a hyphen).
 
+> You only need to run `ollama pull` once. The model is stored in a Docker volume and persists across restarts unless you run `docker compose down -v`.
+
 Confirm Ollama is responsive by navigating to `/chatbot` and sending a test message. If you see an error, run `docker logs huskyhub-ollama` to diagnose.
 
 ---
@@ -118,9 +120,9 @@ Supporting documentation attached.
 
 Upload this file at `/documents` as document type "Accommodation".
 
-Log in as `mwilson` (advisor). In the chatbot, select this document in the **Summarize an uploaded document** dropdown and ask: "Please summarize this accommodation request."
+Stay logged in as the account that uploaded the document (`jsmith`). In the chatbot, select this document in the **Summarize an uploaded document** dropdown and ask: "Please summarize this accommodation request." Document the AI response — the injected instruction is processed even though it lives in the document content, not in your chat message. This is indirect injection: the malicious instruction rode in through data the AI was asked to summarize.
 
-Document the AI response.
+> **Note on the privilege boundary.** In a real deployment the danger is that a *more privileged* user (an advisor) summarizes a student's document and the injection executes in their context. HuskyHub scopes the summarize dropdown to the uploader's own documents (`WHERE user_id = <current user>`), so `mwilson` cannot select `jsmith`'s file — there is no advisor document-review feature. You are demonstrating the mechanism against your own session; keep the cross-user escalation in mind as the real-world risk, and account for it in your Step 9 remediation reasoning.
 
 ---
 
@@ -290,15 +292,11 @@ python -m pytest flask/tests/test_ai_security.py -v
 
 ## Write-Up Questions
 
-**Q1.** Return to your Week 1 chatbot notes. Which responses from Week 1 were early indicators of the vulnerabilities you exploited today? What does this tell you about the relationship between reconnaissance and exploitation?
+**Q1.** Explain the difference between direct prompt injection and indirect prompt injection. Why is indirect injection via uploaded documents particularly dangerous in an application where the AI is used by privileged users such as advisors?
 
-**Q2.** Explain the difference between direct prompt injection and indirect prompt injection. Why is indirect injection via uploaded documents particularly dangerous in an application where the AI is used by privileged users such as advisors?
+**Q2.** In Step 7, the AI was used as a delivery mechanism for XSS — a vulnerability you learned in Week 8. What does this demonstrate about the relationship between AI security and traditional web application security?
 
-**Q3.** In Step 7, the AI was used as a delivery mechanism for XSS — a vulnerability you learned in Week 8. What does this demonstrate about the relationship between AI security and traditional web application security?
-
-**Q4.** Your system prompt hardening in Step 8 reduced the risk of prompt injection. Why is input filtering alone insufficient as the sole defense? What architectural controls would provide stronger guarantees?
-
-**Q5.** Referencing the Week 1 Thursday lecture on AI Risk and Ethics, which of the AI-related risks discussed in lecture did you observe or exploit in this lab? How do the NIST AI Risk Management Framework categories apply to the vulnerabilities you found?
+**Q3.** Your system prompt hardening in Step 8 reduced the risk of prompt injection. Why is input filtering alone insufficient as the sole defense? What architectural controls would provide stronger guarantees?
 
 ---
 
