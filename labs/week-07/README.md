@@ -89,26 +89,28 @@ Rank by total score. This ranking should inform which vulnerabilities you fix fi
 HuskyHub builds its login query by inserting the submitted username directly into a SQL string:
 
 ```python
-query = f"SELECT * FROM users WHERE username = '{username}' AND password = '{password}'"
+query = f"SELECT * FROM users WHERE username = '{username}' AND password = '{password}' AND approved = 1"
 ```
 
-When the username `' OR '1'='1` is inserted, the resulting query becomes:
+When the username `' OR '1'='1' #` is inserted (with anything in the password field), the resulting query becomes:
 
 ```sql
-SELECT * FROM users WHERE username = '' OR '1'='1' AND password = '...'
+SELECT * FROM users WHERE username = '' OR '1'='1' #' AND password = '...' AND approved = 1
 ```
 
-Because `'1'='1'` is always true, the entire `WHERE` clause evaluates to true for every row, and the database returns all users. The `admin'--` payload works differently: the `--` is a SQL comment that causes the database to ignore everything after it — including the `AND password = '...'` check. The database executes only `WHERE username = 'admin'`, bypassing the password verification entirely.
+The `#` marks the rest of the line as a MySQL comment, so the `AND password` and `AND approved` checks are ignored. What remains is `WHERE username = '' OR '1'='1'`, which is true for every row — so the database returns all users and you are logged in as the first one (the admin). The `admin'#` payload works the same way: it reduces the query to `WHERE username = 'admin'`, bypassing the password check entirely.
+
+> **Why `#` and not `--`?** MySQL only treats `--` as a comment when it is followed by whitespace. Because the application appends more SQL right after your input, a trailing `--` often ends up immediately followed by another character and is *not* treated as a comment. The `#` comment marker has no such requirement, so it is the reliable choice here.
 
 In the username field, enter:
 ```
-' OR '1'='1
+' OR '1'='1' #
 ```
 In the password field, enter anything. Attempt to log in. Document the result.
 
 Then try:
 ```
-admin'--
+admin'#
 ```
 in the username field. Document whether you bypass authentication and which account you are logged in as.
 
@@ -117,16 +119,16 @@ in the username field. Document whether you bypass authentication and which acco
 ### 4. Test the Grades Search Endpoint
 
 **What a UNION attack does and why column count matters:**
-A UNION attack appends a second SELECT statement to the original query, causing the database to return rows from both queries in a single result set. For UNION to work, both SELECT statements must return the same number of columns with compatible data types. The column count in the original query is unknown, so you start by guessing — `UNION SELECT 1,2,3,4,5,6--` attempts a 6-column UNION. If the column count is wrong, the database returns an error. If it is correct, the database returns your injected row. Once the correct column count is found, you replace the integer placeholders with actual column names from tables you want to read.
+A UNION attack appends a second SELECT statement to the original query, causing the database to return rows from both queries in a single result set. For UNION to work, both SELECT statements must return the same number of columns with compatible data types. The column count in the original query is unknown, so you start by guessing — `UNION SELECT 1,2,3,4,5,6#` attempts a 6-column UNION. If the column count is wrong, the database returns an error. If it is correct, the database returns your injected row. Once the correct column count is found, you replace the integer placeholders with actual column names from tables you want to read.
 
 Navigate to `/grades` and use the search field. Enter:
 ```
-' UNION SELECT 1,2,3,4,5,6--
+%') UNION SELECT 1,2,3,4,5,6#
 ```
 
 If you receive a column count error, adjust the number of fields until the query succeeds. Then use a payload that extracts data:
 ```
-' UNION SELECT username, password, email, role, 1, 1 FROM users--
+%') UNION SELECT 1,username,1,password,email,role,1 FROM users#
 ```
 
 Document what data is returned.
@@ -137,7 +139,7 @@ Document what data is returned.
 
 Navigate to `/enrollment`. In the course name search field, enter:
 ```
-%' OR 1=1--
+%' OR 1=1#
 ```
 
 Document whether additional records are returned beyond the current user's enrollments. The `%` character is the SQL wildcard for `LIKE` queries — it is included here because the enrollment search likely uses `LIKE '%search_term%'`, and prepending `%` ensures the injected OR clause appends correctly to the existing query structure.
@@ -220,7 +222,7 @@ Apply this change to every route: `auth.py`, `grades.py`, `enrollment.py`, `mess
 
 ### 9. Verify the Remediation
 
-Repeat Steps 3–6 against the hardened application. Paste the sqlmap output showing that injection is no longer possible. Confirm the login bypass payloads return an authentication error.
+Repeat Steps 3–5 against the hardened application. Paste the sqlmap output showing that injection is no longer possible. Confirm the login bypass payloads return an authentication error.
 
 ---
 
@@ -228,13 +230,9 @@ Repeat Steps 3–6 against the hardened application. Paste the sqlmap output sho
 
 **Q1.** Present your completed STRIDE table. For the login form specifically, write one concrete threat per STRIDE category.
 
-**Q2.** Paste the exact payload you used to achieve login bypass and draw out the resulting SQL query with your payload inserted. Explain precisely why it works against a string-concatenated query.
+**Q2.** Explain how a parameterized query prevents SQL injection at a technical level. Why does escaping input without parameterization (e.g., `real_escape_string`) fail to provide equivalent protection?
 
-**Q3.** The UNION-based injection in Step 4 requires knowing the number of columns in the original query. How did you determine the correct column count? What does this tell you about the reconnaissance phase of a SQL injection attack?
-
-**Q4.** Explain how a parameterized query prevents SQL injection at a technical level. Why does escaping input without parameterization (e.g., `real_escape_string`) fail to provide equivalent protection?
-
-**Q5.** Map the vulnerabilities you have found across all labs so far (Weeks 1–7) to the OWASP Top 10. For each applicable category, identify the OWASP entry and the corresponding HuskyHub vulnerability.
+**Q3.** Map the vulnerabilities you have found across all labs so far (Weeks 1–7) to the OWASP Top 10. For each applicable category, identify the OWASP entry and the corresponding HuskyHub vulnerability.
 
 ---
 

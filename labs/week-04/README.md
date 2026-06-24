@@ -45,7 +45,7 @@ pip install pip-audit
 **Why Flask shows verbose errors by default — and what they expose:**
 In development mode, Flask catches unhandled exceptions and returns an HTML page containing the full Python stack trace, the source file paths, the exact line of code that failed, and the values of local variables at the time of the error. This is extremely useful for a developer debugging on their own machine. It is equally useful for an attacker: a stack trace reveals the server's directory structure, the framework version, the names of database tables referenced in the failing query, and sometimes the contents of SQL queries — all without having to find a single vulnerability in the application logic itself. The URLs below intentionally trigger these conditions.
 
-With the application running, navigate to each of the following malformed URLs and record the full response body for each:
+With the application running, **log in as `jsmith` first** (the grades route requires an authenticated session), then navigate to each of the following URLs and record the full response body for each:
 
 ```
 http://localhost/grades?student_id='
@@ -54,15 +54,17 @@ http://localhost/nonexistent-page
 http://localhost/documents/download?file=/etc/passwd
 ```
 
-For each response, document:
+The first two trigger database errors and the third returns a 404. The last URL behaves differently: it does **not** error — it returns HTTP 200 with the contents of `/etc/passwd`. That is a path-traversal / arbitrary-file-read disclosure, not an error condition. Record its response body and note how it differs from the error pages.
+
+For the first response, document:
 - The HTTP status code
 - Every internal detail exposed (stack traces, file paths, library versions, database errors, SQL queries)
-
+- Ensure that you still take a note of the other 3 pages, you will review them again later.
 ---
 
 ### 2. Analyze What an Attacker Learns
 
-For each error response, write a structured analysis: what was revealed, and how would an attacker use that specific piece of information in a subsequent attack? Be specific — "file paths were revealed" is not sufficient; "the path `/app/routes/grades.py` was revealed, telling the attacker the Flask routes are organized in an `app/routes/` directory which matches standard Flask project structure" is.
+For the first error response, write a structured analysis: what was revealed, and how would an attacker use that specific piece of information in a subsequent attack? Be specific — "file paths were revealed" is not sufficient; "the path `/app/routes/grades.py` was revealed, telling the attacker the Flask routes are organized in an `app/routes/` directory which matches standard Flask project structure" is.
 
 ---
 
@@ -158,8 +160,6 @@ Run pip-audit against the application's requirements file:
 
 **macOS / Linux:**
 ```bash
-pip3 audit -r flask/requirements.txt
-# or
 pip-audit -r flask/requirements.txt
 ```
 
@@ -186,23 +186,13 @@ Select the highest-severity CVE from your audit. Look it up at [nvd.nist.gov](ht
 
 ---
 
-### 9. Write a Dependency Management Policy
-
-Write a short policy (3–5 sentences) for the HuskyHub development team covering: how often dependency audits should run, what the escalation path is for a critical CVE, and whether direct or transitive dependencies should be included.
-
----
-
 ## Write-Up Questions
 
-**Q1.** List every piece of internal information exposed by the verbose errors you triggered in Step 1. For each item, explain specifically how an attacker would use it in a follow-on attack.
+**Q1.** What is the principle of least information in the context of error handling? How does your global error handler implement this principle, and why is this different from "security through obscurity"?
 
-**Q2.** Paste one JSON log entry for each of your four log event types. Explain why each field in the structured format is useful for incident response.
+**Q2.** Present your pip-audit results as a table. For the highest-severity CVE you researched, describe the full attack chain: how an attacker discovers the vulnerable version, how they exploit it, and what they can achieve against HuskyHub.
 
-**Q3.** What is the principle of least information in the context of error handling? How does your global error handler implement this principle, and why is this different from "security through obscurity"?
-
-**Q4.** Present your pip-audit results as a table. For the highest-severity CVE you researched, describe the full attack chain: how an attacker discovers the vulnerable version, how they exploit it, and what they can achieve against HuskyHub.
-
-**Q5.** The Thursday lecture covered third-party risk. What is a software supply chain attack? How does the SolarWinds breach illustrate that dependency risk extends beyond known CVEs in publicly listed packages?
+**Q3.** The Thursday lecture covered third-party risk. What is a software supply chain attack? How does the SolarWinds breach illustrate that dependency risk extends beyond known CVEs in publicly listed packages?
 
 ---
 

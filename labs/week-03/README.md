@@ -101,11 +101,15 @@ A migration script is a one-time program that transforms existing data from one 
 Create `flask/migrate_passwords.py`. This script should:
 1. Connect to the database
 2. Read every user record
-3. Hash each plaintext password using your utility function
-4. Update the record with the hash
+3. Skip any password already beginning with `$2b$` or `$2a$` (so the script is safe to run more than once)
+4. Hash each plaintext password using your utility function
+5. Update the record with the hash
 
-Run it against the live database:
+The Dockerfile only copies `flask/app/` into the image, so a one-time script placed at `flask/migrate_passwords.py` is **not** inside the container. Rebuild first so your new `utils.py` is in the image, then copy the migration script into the running container and execute it:
+
 ```bash
+docker compose up --build -d
+docker cp flask/migrate_passwords.py huskyhub-flask:/app/migrate_passwords.py
 docker exec -it huskyhub-flask python migrate_passwords.py
 ```
 
@@ -182,6 +186,11 @@ server {
     ssl_certificate     /etc/nginx/certs/cert.pem;
     ssl_certificate_key /etc/nginx/certs/key.pem;
 
+    # Keep serving static files directly, as in the original config
+    location /static/ {
+        alias /var/www/html/static/;
+    }
+
     location / {
         proxy_pass http://huskyhub-flask:5000;
         proxy_set_header Host $host;
@@ -189,6 +198,8 @@ server {
     }
 }
 ```
+
+> Keep the `location /static/` block inside the new `443` server block (it was present in the original `nginx/default.conf`) so nginx continues serving CSS and other static assets directly.
 
 Update `docker-compose.yaml` to mount the certs and expose port 443:
 ```yaml
