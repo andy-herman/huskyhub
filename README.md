@@ -4,6 +4,8 @@
 
 ---
 
+> **New to the terminal, or stuck on setup?** See the **[Setup & Troubleshooting Guide](TROUBLESHOOTING.md)** for terminal basics and per-week Windows/Mac fixes.
+
 ## Overview
 
 The AI Academic Advisor has been present since Week 1. You have been building context all quarter on how web applications fail. Now you apply that same lens to the AI component.
