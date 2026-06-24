@@ -76,9 +76,9 @@ Look up another user's `user_id` from the grades page (`/grades?student_id=X`). 
 **What session fixation is and what it enables:**
 Session fixation is an attack where the attacker forces a known session token onto the victim before the victim authenticates, then waits for the victim to log in. If the server does not generate a new session token upon successful authentication, the attacker's pre-known token becomes a valid authenticated session. The attacker never needed to steal the token — they established it before authentication occurred. The fix is simple: call `session.clear()` immediately after verifying credentials, which forces a new session token to be issued for the authenticated session.
 
-Record your session-related cookie values **before** logging in (they may be set on the login page itself). Log in. Record the same cookie values **after** login.
+HuskyHub does not currently issue a server-side session token at all — after login it only sets the plaintext `authenticated`, `role`, and `user_id` cookies. Open Developer Tools → **Application → Cookies** and record any cookies present **before** logging in. Log in, then record the cookies **after** login.
 
-Did the session token change? If the same token is valid both before and after authentication, the application is vulnerable to session fixation. Document what you find.
+What you should find: there is no server-issued session identifier that gets created and rotated at login — the app trusts forgeable identity cookies instead. This absence is the deeper form of the session-fixation flaw: with no session token to rotate, nothing protects the transition into an authenticated state. (After you implement signed sessions in Step 6, repeat this check: Flask will now issue a `session` cookie, and Step 7 ensures it is regenerated on login.)
 
 ---
 
@@ -130,12 +130,14 @@ Record: how many requests per second, how many attempts before finding the passw
 **What Flask's session mechanism does and why signing prevents forgery:**
 Flask's `session` object is a dictionary backed by a cryptographically signed cookie. When you write to `session['role'] = 'student'`, Flask serializes the dictionary to JSON, then signs it using HMAC-SHA256 with the application's `secret_key`. The resulting cookie looks like a long opaque string rather than readable text. When a request arrives, Flask verifies the signature before reading the session data — if anything in the cookie was modified, the signature check fails and the session is rejected. An attacker who changes `role` in the cookie now also invalidates the signature, which the server detects. `secrets.token_hex(32)` generates 32 bytes (256 bits) of cryptographically random data — sufficient that no attacker can guess or brute-force the key.
 
-Replace the plaintext cookies with Flask's signed session mechanism. In `__init__.py`, set a strong secret key:
+Replace the plaintext cookies with Flask's signed session mechanism. In `__init__.py`, set a strong secret key from the environment:
 
 ```python
-import secrets
-app.secret_key = secrets.token_hex(32)
+import os
+app.secret_key = os.environ.get("FLASK_SECRET_KEY")
 ```
+
+> Generate the key **once** with `python -c "import secrets; print(secrets.token_hex(32))"` and set it as `FLASK_SECRET_KEY` in your `.env` (it is already wired into `docker-compose.yaml`). Do **not** call `secrets.token_hex()` at startup — that regenerates the key on every restart and silently invalidates every active session.
 
 In `auth.py`, replace `response.set_cookie(...)` with `session[...]` assignments:
 
@@ -177,6 +179,8 @@ ALTER TABLE users
   ADD COLUMN failed_attempts INT NOT NULL DEFAULT 0,
   ADD COLUMN lockout_until DATETIME NULL;
 ```
+
+> Also add these two columns to the `users` table definition in `database/init.sql`. The `ALTER TABLE` only changes your running database — if you later reset with `docker compose down -v`, the database is rebuilt from `init.sql`, and without the columns there your hardened login code will fail.
 
 In the login route, add logic that:
 - Increments `failed_attempts` on each failed login
