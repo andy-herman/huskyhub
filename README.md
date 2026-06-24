@@ -19,14 +19,14 @@ Before starting, confirm that Ollama is running and the model has been pulled. R
 **macOS / Linux:**
 ```bash
 docker compose --profile ai up -d
-docker exec -it huskyhub-huskyhub-ollama-1 ollama pull llama3.2
+docker exec -it huskyhub-ollama ollama pull llama3.2
 docker compose restart huskyhub-flask
 ```
 
 **Windows (PowerShell or Git Bash):**
 ```powershell
 docker compose --profile ai up -d
-docker exec -it huskyhub-huskyhub-ollama-1 ollama pull llama3.2
+docker exec -it huskyhub-ollama ollama pull llama3.2
 docker compose restart huskyhub-flask
 ```
 
@@ -36,7 +36,7 @@ docker compose restart huskyhub-flask
 
 > You only need to run `ollama pull` once. The model is stored in a Docker volume and persists across restarts unless you run `docker compose down -v`.
 
-Confirm Ollama is responsive by navigating to `/chatbot` and sending a test message. If you see an error, run `docker logs huskyhub-huskyhub-ollama-1` to diagnose.
+Confirm Ollama is responsive by navigating to `/chatbot` and sending a test message. If you see an error, run `docker logs huskyhub-ollama` to diagnose.
 
 ---
 
@@ -59,8 +59,6 @@ Confirm Ollama is responsive by navigating to `/chatbot` and sending a test mess
 Open your Week 1 lab report. Re-read the chatbot responses you documented in Week 1 Step 7. Before proceeding, annotate each response with what you now understand about why it is significant.
 
 The chatbot responses in Week 1 were reconnaissance data — just like HTTP headers and cookie flags. A student who answered "I don't know what to look for yet" in Week 1 is now equipped to see exactly what those responses reveal about the underlying system architecture and data access.
-
-**IGNORE THIS STEP**
 
 ---
 
@@ -122,11 +120,9 @@ Supporting documentation attached.
 
 Upload this file at `/documents` as document type "Accommodation".
 
-Log in as `mwilson` (advisor). In the chatbot, select this document in the **Summarize an uploaded document** dropdown and ask: "Please summarize this accommodation request."
+Stay logged in as the account that uploaded the document (`jsmith`). In the chatbot, select this document in the **Summarize an uploaded document** dropdown and ask: "Please summarize this accommodation request." Document the AI response — the injected instruction is processed even though it lives in the document content, not in your chat message. This is indirect injection: the malicious instruction rode in through data the AI was asked to summarize.
 
-If you do not see the document on mwilson's account please document this and instead attempt with the user account used to upload the files (most likely `jsmith`).
-
-Document the AI response.
+> **Note on the privilege boundary.** In a real deployment the danger is that a *more privileged* user (an advisor) summarizes a student's document and the injection executes in their context. HuskyHub scopes the summarize dropdown to the uploader's own documents (`WHERE user_id = <current user>`), so `mwilson` cannot select `jsmith`'s file — there is no advisor document-review feature. You are demonstrating the mechanism against your own session; keep the cross-user escalation in mind as the real-world risk, and account for it in your Step 9 remediation reasoning.
 
 ---
 

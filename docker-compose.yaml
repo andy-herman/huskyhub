@@ -2,6 +2,7 @@ services:
 
   huskyhub-nginx:
     image: nginx:latest
+    container_name: huskyhub-nginx
     ports:
       - "80:80"
     volumes:
@@ -14,6 +15,7 @@ services:
     build:
       context: .
       dockerfile: ./flask/Dockerfile
+    container_name: huskyhub-flask
     environment:
       DB_HOST: huskyhub-db
       DB_USER: ${MYSQL_USER}
@@ -21,6 +23,7 @@ services:
       DB_NAME: ${MYSQL_DATABASE}
       FLASK_ENV: development
       FLASK_DEBUG: 1
+      FLASK_SECRET_KEY: ${FLASK_SECRET_KEY:-dev-secret-huskyhub-2024}
     volumes:
       - ./flask/app/uploads:/app/app/uploads
     depends_on:
@@ -31,6 +34,7 @@ services:
 
   huskyhub-db:
     image: mysql:8.0
+    container_name: huskyhub-db
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_USER: ${MYSQL_USER}
@@ -40,7 +44,7 @@ services:
       - mysqldata:/var/lib/mysql
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
-      - "3306:3306"
+      - "${MYSQL_PORT:-3306}:3306"
     restart: always
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
@@ -50,6 +54,7 @@ services:
 
   huskyhub-ollama:
     image: ollama/ollama:latest
+    container_name: huskyhub-ollama
     profiles:
       - ai
     ports:
