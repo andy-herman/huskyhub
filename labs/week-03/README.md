@@ -101,11 +101,15 @@ A migration script is a one-time program that transforms existing data from one 
 Create `flask/migrate_passwords.py`. This script should:
 1. Connect to the database
 2. Read every user record
-3. Hash each plaintext password using your utility function
-4. Update the record with the hash
+3. Skip any password already beginning with `$2b$` or `$2a$` (so the script is safe to run more than once)
+4. Hash each plaintext password using your utility function
+5. Update the record with the hash
 
-Run it against the live database:
+The Dockerfile only copies `flask/app/` into the image, so a one-time script placed at `flask/migrate_passwords.py` is **not** inside the container. Rebuild first so your new `utils.py` is in the image, then copy the migration script into the running container and execute it:
+
 ```bash
+docker compose up --build -d
+docker cp flask/migrate_passwords.py huskyhub-flask:/app/migrate_passwords.py
 docker exec -it huskyhub-flask python migrate_passwords.py
 ```
 
@@ -182,6 +186,11 @@ server {
     ssl_certificate     /etc/nginx/certs/cert.pem;
     ssl_certificate_key /etc/nginx/certs/key.pem;
 
+    # Keep serving static files directly, as in the original config
+    location /static/ {
+        alias /var/www/html/static/;
+    }
+
     location / {
         proxy_pass http://huskyhub-flask:5000;
         proxy_set_header Host $host;
@@ -189,6 +198,8 @@ server {
     }
 }
 ```
+
+> Keep the `location /static/` block inside the new `443` server block (it was present in the original `nginx/default.conf`) so nginx continues serving CSS and other static assets directly.
 
 Update `docker-compose.yaml` to mount the certs and expose port 443:
 ```yaml
@@ -236,7 +247,11 @@ Screenshot the output. All values should now be bcrypt hashes beginning with `$2
 
 **Q2.** What is a salt in the context of bcrypt? Paste one hash from your database and identify which part of the string is the salt. Why does bcrypt embed the salt in the hash output rather than storing it separately?
 
-**Q3.** Your certificate is self-signed. What is the difference between a self-signed certificate and one signed by a Certificate Authority? What specific attack does a CA signature protect against that your certificate does not?
+**Q3.** Paste the Wireshark capture output from re-running the Week 2 login over HTTPS. What does the payload look like now? What protocol layer handled the encryption?
+
+**Q4.** Your certificate is self-signed. What is the difference between a self-signed certificate and one signed by a Certificate Authority? What specific attack does a CA signature protect against that your certificate does not?
+
+**Q5.** In Week 2, ARP spoofing allowed an attacker to steal a session cookie, not just credentials. Does HTTPS fully protect against session cookie theft via MITM? If not, what additional remediation is required?
 
 ---
 
@@ -246,5 +261,6 @@ Cryptography is frequently implemented incorrectly not because developers are ig
 
 Reflect on:
 
+- **Contrarian:** Why is a fast hash function (like SHA-256) *worse* for passwords than a slow one (like bcrypt)? What attacker behavior does this speed difference enable?
 - **Committed:** If an attacker obtained a database full of bcrypt hashes, describe the exact process they would use to attempt to crack them. What resources would they need?
 - **Creative:** bcrypt was designed in 1999. What properties would you want in a password hashing algorithm designed today, and does bcrypt still meet them?

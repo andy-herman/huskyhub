@@ -45,7 +45,7 @@ pip install pip-audit
 **Why Flask shows verbose errors by default — and what they expose:**
 In development mode, Flask catches unhandled exceptions and returns an HTML page containing the full Python stack trace, the source file paths, the exact line of code that failed, and the values of local variables at the time of the error. This is extremely useful for a developer debugging on their own machine. It is equally useful for an attacker: a stack trace reveals the server's directory structure, the framework version, the names of database tables referenced in the failing query, and sometimes the contents of SQL queries — all without having to find a single vulnerability in the application logic itself. The URLs below intentionally trigger these conditions.
 
-With the application running, navigate to each of the following malformed URLs and record the full response body for each:
+With the application running, **log in as `jsmith` first** (the grades route requires an authenticated session), then navigate to each of the following URLs and record the full response body for each:
 
 ```
 http://localhost/grades?student_id='
@@ -53,6 +53,8 @@ http://localhost/grades?student_id=1 UNION SELECT 1,2,3--
 http://localhost/nonexistent-page
 http://localhost/documents/download?file=/etc/passwd
 ```
+
+The first two trigger database errors and the third returns a 404. The last URL behaves differently: it does **not** error — it returns HTTP 200 with the contents of `/etc/passwd`. That is a path-traversal / arbitrary-file-read disclosure, not an error condition. Record its response body and note how it differs from the error pages.
 
 For the first response, document:
 - The HTTP status code
@@ -144,10 +146,6 @@ Trigger each of the four log events. Then read the log file:
 ```bash
 docker exec -it huskyhub-flask cat /var/log/huskyhub/app.log
 ```
-If that doesn't work try:
-```bash
-docker exec -it huskyhub-huskyhub-flask-1 cat /var/log/huskyhub/app.log
-```
 
 Paste at least one log entry per event type in your report. Confirm the JSON structure includes timestamp, level, user, and endpoint fields.
 
@@ -162,8 +160,6 @@ Run pip-audit against the application's requirements file:
 
 **macOS / Linux:**
 ```bash
-pip3 audit -r flask/requirements.txt
-# or
 pip-audit -r flask/requirements.txt
 ```
 
