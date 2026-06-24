@@ -178,7 +178,8 @@ INSERT INTO enrollments (student_id, course_id, quarter, status) VALUES
 
 -- ─────────────────────────────────────────
 -- Messages
--- Note: one message contains stored XSS payload (Week 8 target)
+-- Note: message bodies are rendered unescaped with | safe — the Week 8 stored-XSS
+--       target (students inject their own payload during the lab; none is seeded here)
 -- ─────────────────────────────────────────
 
 INSERT INTO messages (sender_id, recipient_id, subject, body, is_read) VALUES
@@ -200,7 +201,8 @@ INSERT INTO messages (sender_id, recipient_id, subject, body, is_read) VALUES
 
 -- ─────────────────────────────────────────
 -- Advising Notes
--- Note: one note contains stored XSS payload (Week 8 target)
+-- Note: advising notes are rendered unescaped with | safe — the Week 8 stored-XSS
+--       target (students inject their own payload during the lab; none is seeded here)
 -- ─────────────────────────────────────────
 
 INSERT INTO advising_notes (student_id, advisor_id, note_content) VALUES

@@ -119,6 +119,8 @@ A Content Security Policy is an HTTP response header that tells the browser whic
 
 HuskyHub loads Bootstrap from `cdn.jsdelivr.net`, so the CSP must explicitly allow that external source for scripts and styles — otherwise the site will lose all styling. Add the following header in `nginx/default.conf` inside the HTTPS server block:
 
+> **Builds on Week 3.** This goes in the HTTPS (port 443) `server` block you created in Week 3. If you have not enabled HTTPS yet, add the line to your port-80 `server` block instead.
+
 ```nginx
 add_header Content-Security-Policy "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' https://cdn.jsdelivr.net" always;
 ```
@@ -126,22 +128,18 @@ add_header Content-Security-Policy "default-src 'self'; script-src 'self' https:
 Reload nginx:
 
 ```bash
-docker exec <nginx-container-name> nginx -s reload
+docker exec huskyhub-nginx nginx -s reload
 ```
 
 In Developer Tools → **Network**, click any request and verify the `Content-Security-Policy` header is present in the response headers.
 
-To verify CSP is blocking inline script execution, open the browser **Console** tab and run:
-
-```javascript
-fetch('http://external-example.com/test')
-```
-
-You should see an error similar to:
+Then confirm the policy actually blocks an injected script. Re-open the stored message from Step 1 (whose body is `<script>alert(document.cookie)</script>`). With CSP active, the browser refuses to run the inline script, and the **Console** tab shows a violation similar to:
 
 ```
-Refused to connect to 'http://external-example.com/test' because it violates the following Content Security Policy directive: "default-src 'self'"
+Refused to execute inline script because it violates the following Content Security Policy directive: "script-src 'self' https://cdn.jsdelivr.net".
 ```
+
+Before you added the CSP, that script executed and popped an alert; now it is blocked. That is the defense-in-depth payoff — the `| safe` XSS is still present in the markup, but the policy stops it from executing.
 
 ---
 
@@ -182,7 +180,7 @@ def test_reflected_search_not_executed():
     ...
 ```
 
-Write three test cases: one for message body XSS, one for advising notes XSS, and one for a URL-reflected parameter. Each test must assert that the raw `<script>` tag is present as escaped HTML entities, not as an executable tag.
+Write three test cases: one for message body XSS, one for advising notes XSS, and one for a URL-reflected parameter (e.g. the `/grades` `search` field — note this parameter is already auto-escaped because it is rendered without `| safe`, so this test confirms a non-vulnerable parameter stays safe rather than fixing a live bug). Each test must assert that the raw `<script>` tag is present as escaped HTML entities, not as an executable tag.
 
 Run the tests:
 

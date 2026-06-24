@@ -2,17 +2,12 @@ services:
 
   huskyhub-nginx:
     image: nginx:latest
+    container_name: huskyhub-nginx
     ports:
       - "80:80"
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
       - ./flask/app/static:/var/www/html/static
-    healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost/login"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
     depends_on:
       - huskyhub-flask
 
@@ -20,6 +15,7 @@ services:
     build:
       context: .
       dockerfile: ./flask/Dockerfile
+    container_name: huskyhub-flask
     environment:
       DB_HOST: huskyhub-db
       DB_USER: ${MYSQL_USER}
@@ -30,12 +26,6 @@ services:
       FLASK_SECRET_KEY: ${FLASK_SECRET_KEY:-dev-secret-huskyhub-2024}
     volumes:
       - ./flask/app/uploads:/app/app/uploads
-    healthcheck:
-      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/')"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 15s
     depends_on:
       huskyhub-db:
         condition: service_healthy
@@ -44,6 +34,7 @@ services:
 
   huskyhub-db:
     image: mysql:8.0
+    container_name: huskyhub-db
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_USER: ${MYSQL_USER}
@@ -63,6 +54,7 @@ services:
 
   huskyhub-ollama:
     image: ollama/ollama:latest
+    container_name: huskyhub-ollama
     profiles:
       - ai
     ports:
